@@ -1,0 +1,2762 @@
+<!DOCTYPE html>
+<html lang="pt-BR" style="background:#0f0e0c">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0f0e0c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>MEU CADERNO DE ERROS</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f0e0c;--surface:#1a1916;--surface2:#252320;--border:#2e2c28;
+    --accent:#e8c547;--accent2:#d4773a;--accent3:#5b8fa8;
+    --text:#f0ece4;--text2:#9c9789;--text3:#6b6760;
+    --red:#c0392b;--green:#27ae60;--yellow:#e8c547;
+    --radius:12px;--shadow:0 8px 32px rgba(0,0,0,0.5);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+  /* ── SVG ICON HELPER ── */
+  .icon{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+  .icon svg{display:block}
+
+  /* ══════════════════════════════════
+     SPLASH
+  ══════════════════════════════════ */
+  #splash{
+    position:fixed;inset:0;background:var(--bg);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    z-index:1000;padding:2rem;text-align:center;
+  }
+  .splash-logo{
+    width:92px;height:92px;background:var(--accent);border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    margin-bottom:2rem;animation:pulse 2.2s ease-in-out infinite;
+  }
+  .splash-logo svg{width:44px;height:44px;stroke:#000;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+  @keyframes pulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(232,197,71,0)}
+    50%{transform:scale(1.05);box-shadow:0 0 0 14px rgba(232,197,71,0)}}
+
+  #splash h1{font-family:'Playfair Display',serif;font-size:clamp(2rem,7vw,3.8rem);font-weight:900;line-height:1.05;letter-spacing:-1.5px}
+  #splash h1 span{color:var(--accent)}
+  .splash-sub{color:var(--text2);margin:1rem 0 2.5rem;font-size:1.05rem;max-width:380px;line-height:1.6}
+  .btn-primary{background:var(--accent);color:#000;border:none;padding:1rem 2.8rem;font-family:'DM Sans',sans-serif;font-weight:700;font-size:1rem;border-radius:50px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:0.5rem}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(232,197,71,0.35)}
+  .btn-primary svg{width:16px;height:16px;fill:none;stroke:#000;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+  /* Assinatura SPLASH — visível, elegante, discreta */
+  .splash-credit{
+    margin-top:2.8rem;
+    display:flex;align-items:center;justify-content:center;gap:0.55rem;
+    opacity:0.42;
+  }
+  .splash-credit-inner{
+    display:flex;align-items:center;gap:0.5rem;
+    padding:0.4rem 1rem;border-radius:50px;
+    border:1px solid rgba(240,236,228,0.1);
+    background:rgba(255,255,255,0.03);
+  }
+  .splash-credit svg{width:13px;height:13px;fill:currentColor;color:var(--text3)}
+  .splash-credit span{font-size:0.72rem;color:var(--text3);letter-spacing:0.8px;font-weight:500}
+  .splash-credit .sep{color:var(--border);font-size:0.7rem}
+
+  /* ══════════════════════════════════
+     APP
+  ══════════════════════════════════ */
+  #app{display:none;min-height:100vh}
+
+  /* HEADER */
+  header{
+    position:sticky;top:0;z-index:100;
+    background:rgba(15,14,12,0.97);backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--border);
+    padding:0 1.5rem;display:flex;align-items:center;gap:1rem;height:62px;
+  }
+  .header-logo{display:flex;flex-direction:column;line-height:1;gap:0.15rem}
+  .brand-tag{font-size:0.5rem;color:var(--text3);letter-spacing:2.5px;text-transform:uppercase;font-weight:500}
+  .brand-name{font-family:'Playfair Display',serif;font-weight:900;font-size:1rem;color:var(--text)}
+  .brand-name span{color:var(--accent)}
+  .header-nav{display:flex;gap:0.2rem;margin-left:auto}
+  .nav-btn{
+    background:none;border:none;color:var(--text2);
+    padding:0.45rem 0.9rem;border-radius:8px;
+    cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.82rem;
+    transition:all 0.2s;display:flex;align-items:center;gap:0.42rem;
+  }
+  .nav-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .nav-btn:hover,.nav-btn.active{background:var(--surface2);color:var(--text)}
+  .nav-btn.active{color:var(--accent)}
+  /* Crédito header — suave */
+  .header-credit{
+    display:flex;align-items:center;gap:0.38rem;
+    opacity:0.22;pointer-events:none;user-select:none;
+  }
+  .header-credit svg{width:11px;height:11px;fill:currentColor;color:var(--text3)}
+  .header-credit span{font-size:0.58rem;color:var(--text3);letter-spacing:0.5px}
+
+  /* LAYOUT */
+  .main-layout{display:grid;grid-template-columns:272px 1fr;min-height:calc(100vh - 62px)}
+
+  /* SIDEBAR */
+  aside{background:var(--surface);border-right:1px solid var(--border);padding:1.5rem 1rem;overflow-y:auto;position:sticky;top:62px;height:calc(100vh - 62px)}
+  .sidebar-section{margin-bottom:2rem}
+  .sidebar-label{font-size:0.66rem;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--text3);padding:0 0.5rem;margin-bottom:0.75rem}
+  .folder-item{display:flex;align-items:center;gap:0.6rem;padding:0.58rem 0.68rem;border-radius:8px;cursor:pointer;transition:all 0.15s;margin-bottom:0.1rem;color:var(--text2);font-size:0.87rem}
+  .folder-item:hover{background:var(--surface2);color:var(--text)}
+  .folder-item.active{background:var(--surface2);color:var(--accent)}
+  .folder-item svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+  .folder-count{margin-left:auto;font-size:0.65rem;background:var(--surface);padding:0.12rem 0.42rem;border-radius:10px;color:var(--text3);flex-shrink:0}
+  .folder-item.active .folder-count{background:rgba(232,197,71,0.1);color:var(--accent)}
+  .folder-name-input{background:transparent;border:none;outline:none;color:inherit;font-family:'DM Sans',sans-serif;font-size:0.87rem;flex:1;min-width:0;cursor:pointer}
+  .folder-name-input:focus{cursor:text}
+  .folder-del{background:none;border:none;color:transparent;cursor:pointer;padding:0.1rem;transition:all 0.15s;flex-shrink:0;display:flex}
+  .folder-del svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+  .folder-item:hover .folder-del{color:var(--text3)}
+  .folder-del:hover{color:var(--red)!important}
+  .add-folder-btn{width:100%;padding:0.52rem;border:1px dashed var(--border);background:none;color:var(--text3);border-radius:8px;cursor:pointer;font-size:0.8rem;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:0.42rem;margin-top:0.5rem}
+  .add-folder-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .add-folder-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+  /* STATS */
+  .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.48rem}
+  .stat-card{background:var(--surface2);border-radius:8px;padding:0.68rem;text-align:center}
+  .stat-card .num{font-family:'DM Mono',monospace;font-size:1.3rem;font-weight:500;color:var(--accent);line-height:1}
+  .stat-card .lbl{font-size:0.61rem;color:var(--text3);margin-top:0.18rem}
+
+  /* MAIN */
+  main{padding:1.6rem 1.9rem;overflow-y:auto}
+
+  /* TÍTULO CENTRAL */
+  .page-heading{text-align:center;margin-bottom:1.6rem;padding-bottom:1.2rem;border-bottom:1px solid var(--border)}
+  .page-heading .eyebrow{font-size:0.62rem;letter-spacing:3px;text-transform:uppercase;color:var(--text3);margin-bottom:0.25rem}
+  .page-heading h1{font-family:'Playfair Display',serif;font-size:clamp(1.35rem,2.8vw,2rem);font-weight:900;letter-spacing:-0.5px}
+  .page-heading h1 span{color:var(--accent)}
+
+  /* TOOLBAR */
+  .toolbar{display:flex;align-items:center;gap:0.7rem;margin-bottom:1.4rem;flex-wrap:wrap}
+  .toolbar h2{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;flex:1}
+  .search-box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.52rem 0.88rem;display:flex;align-items:center;gap:0.45rem;min-width:195px}
+  .search-box svg{width:15px;height:15px;stroke:var(--text3);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+  .search-box input{background:none;border:none;outline:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.83rem;flex:1}
+  .search-box input::placeholder{color:var(--text3)}
+  .btn-add{background:var(--accent);color:#000;border:none;padding:0.58rem 1.15rem;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:700;font-size:0.83rem;display:flex;align-items:center;gap:0.38rem;transition:all 0.2s;white-space:nowrap}
+  .btn-add svg{width:15px;height:15px;stroke:#000;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+  .btn-add:hover{background:#f0d060;transform:translateY(-1px)}
+
+  /* REVISION BANNER */
+  .revision-banner{background:linear-gradient(135deg,#1a1916,#252320);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:var(--radius);padding:1.05rem 1.35rem;margin-bottom:1.6rem;display:flex;align-items:center;gap:1.4rem;flex-wrap:wrap}
+  .revision-banner-icon{width:36px;height:36px;background:rgba(232,197,71,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .revision-banner-icon svg{width:18px;height:18px;stroke:var(--accent);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .revision-banner h3{font-size:0.88rem;font-weight:600;margin-bottom:0.18rem}
+  .revision-banner p{font-size:0.76rem;color:var(--text2)}
+  .revision-pills{display:flex;gap:0.38rem;flex-wrap:wrap}
+  .rev-pill{padding:0.3rem 0.8rem;border-radius:50px;font-size:0.7rem;font-weight:700;cursor:pointer;border:1px solid transparent;transition:all 0.15s}
+  .rev-pill.r24{background:rgba(232,197,71,0.1);color:var(--accent);border-color:var(--accent)}
+  .rev-pill.r7{background:rgba(91,143,168,0.1);color:var(--accent3);border-color:var(--accent3)}
+  .rev-pill.r30{background:rgba(212,119,58,0.1);color:var(--accent2);border-color:var(--accent2)}
+  .rev-pill:hover{transform:scale(1.05)}
+  .rev-count{margin-left:auto;display:flex;align-items:center;gap:0.38rem}
+  .rev-badge{background:var(--red);color:white;font-size:0.66rem;font-weight:700;padding:0.16rem 0.5rem;border-radius:50px}
+
+  /* VIEW TOGGLE */
+  .view-toggle{display:flex;gap:0.18rem}
+  .view-btn{background:none;border:1px solid var(--border);color:var(--text3);padding:0.42rem;border-radius:6px;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;justify-content:center}
+  .view-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .view-btn.active{background:var(--surface2);color:var(--accent);border-color:var(--accent)}
+
+  /* FILTER */
+  .filter-bar{display:flex;gap:0.38rem;flex-wrap:wrap;margin-bottom:1.35rem}
+  .filter-chip{padding:0.35rem 0.82rem;border-radius:50px;border:1px solid var(--border);background:none;color:var(--text2);font-size:0.76rem;cursor:pointer;transition:all 0.15s;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:0.3rem}
+  .filter-chip svg{width:9px;height:9px}
+  .filter-chip:hover,.filter-chip.active{background:var(--surface2);color:var(--text);border-color:var(--text3)}
+  .filter-chip.active{border-color:var(--accent);color:var(--accent)}
+
+  /* CARDS */
+  .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:1.05rem}
+  .error-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:all 0.2s;cursor:pointer}
+  .error-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:#3e3c38}
+  .card-stripe{height:4px}
+  .card-stripe.facil{background:var(--green)}
+  .card-stripe.medio{background:var(--yellow)}
+  .card-stripe.dificil{background:var(--red)}
+  .card-body{padding:1.05rem}
+  .card-header{display:flex;align-items:flex-start;gap:0.62rem;margin-bottom:0.62rem}
+  .card-icon{width:34px;height:34px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .card-icon svg{width:17px;height:17px;stroke:var(--text2);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .card-title-area{flex:1;min-width:0}
+  .card-materia{font-size:0.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px}
+  .card-assunto{font-weight:600;font-size:0.9rem;margin-top:0.1rem;line-height:1.3}
+  .card-banca{font-size:0.64rem;font-family:'DM Mono',monospace;background:var(--surface2);padding:0.16rem 0.42rem;border-radius:4px;color:var(--text3);flex-shrink:0}
+  .card-tags{display:flex;flex-wrap:wrap;gap:0.32rem;margin-bottom:0.62rem}
+  .tag{font-size:0.66rem;padding:0.16rem 0.5rem;border-radius:50px;background:var(--surface2);color:var(--text2)}
+  .tag.lei{background:rgba(91,143,168,0.1);color:var(--accent3)}
+  .card-onde{font-size:0.76rem;color:var(--text2);margin-bottom:0.62rem;padding:0.48rem 0.62rem;background:rgba(192,57,43,0.07);border-left:2px solid var(--red);border-radius:0 6px 6px 0}
+  .card-onde strong{color:var(--text);display:block;margin-bottom:0.12rem;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.5px}
+  .card-footer{display:flex;align-items:center;gap:0.38rem;padding-top:0.62rem;border-top:1px solid var(--border);flex-wrap:wrap}
+  .diff-badge{font-size:0.65rem;font-weight:700;padding:0.18rem 0.55rem;border-radius:50px;display:flex;align-items:center;gap:0.28rem}
+  .diff-badge svg{width:7px;height:7px}
+  .diff-badge.facil{background:rgba(39,174,96,0.1);color:var(--green)}
+  .diff-badge.medio{background:rgba(232,197,71,0.1);color:var(--yellow)}
+  .diff-badge.dificil{background:rgba(192,57,43,0.1);color:var(--red)}
+  .card-date{font-size:0.65rem;color:var(--text3);margin-left:auto;font-family:'DM Mono',monospace}
+  .rev-status{font-size:0.6rem;padding:0.12rem 0.42rem;border-radius:50px;font-weight:700;display:flex;align-items:center;gap:0.25rem}
+  .rev-status svg{width:9px;height:9px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+  .rev-status.pendente{background:rgba(232,197,71,0.07);color:var(--yellow)}
+  .rev-status.ok{background:rgba(39,174,96,0.07);color:var(--green)}
+
+  /* EMPTY */
+  .empty-state{text-align:center;padding:3.2rem 2rem;color:var(--text3);grid-column:1/-1}
+  .empty-state svg{width:40px;height:40px;stroke:var(--text3);fill:none;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;margin:0 auto 1rem;display:block;opacity:0.5}
+  .empty-state h3{font-family:'Playfair Display',serif;font-size:1.15rem;color:var(--text2);margin-bottom:0.38rem}
+  .empty-state p{font-size:0.83rem}
+
+  /* REVISION VIEW */
+  #viewRevision{display:none}
+  #viewHome{display:block}
+  .section-title{font-family:'Playfair Display',serif;font-size:1.6rem;margin-bottom:0.38rem}
+  .section-subtitle{color:var(--text2);font-size:0.85rem;margin-bottom:1.4rem}
+
+  /* ALERTA DE REVISÕES ATRASADAS */
+  .alert-banner{
+    display:none;background:rgba(192,57,43,0.08);border:1px solid rgba(192,57,43,0.3);
+    border-left:3px solid var(--red);border-radius:var(--radius);
+    padding:0.9rem 1.2rem;margin-bottom:1.2rem;
+    flex-direction:row;align-items:center;gap:1rem;flex-wrap:wrap;
+    animation:fadeIn 0.4s ease;
+  }
+  .alert-banner.visible{display:flex}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+  .alert-banner-icon{width:32px;height:32px;background:rgba(192,57,43,0.15);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .alert-banner-icon svg{width:16px;height:16px;stroke:var(--red);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .alert-banner-text h4{font-size:0.85rem;font-weight:700;color:var(--text);margin-bottom:0.1rem}
+  .alert-banner-text p{font-size:0.76rem;color:var(--text2)}
+  .alert-banner-btn{margin-left:auto;background:var(--red);color:#fff;border:none;padding:0.45rem 1rem;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:700;font-size:0.78rem;white-space:nowrap;transition:all 0.2s}
+  .alert-banner-btn:hover{background:#e04030}
+
+  /* CARTÃO COM REVISÃO URGENTE */
+  .error-card.overdue{border-color:rgba(192,57,43,0.4);box-shadow:0 0 0 1px rgba(192,57,43,0.15)}
+  .error-card.overdue .card-stripe{animation:stripePulse 2s ease-in-out infinite}
+  @keyframes stripePulse{0%,100%{opacity:1}50%{opacity:0.5}}
+
+  /* PRÓXIMA REVISÃO SUGERIDA */
+  .next-rev-chip{font-size:0.62rem;font-weight:700;padding:0.18rem 0.5rem;border-radius:50px;display:inline-flex;align-items:center;gap:0.22rem;white-space:nowrap}
+  .next-rev-chip svg{width:9px;height:9px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+  .next-rev-chip.urgente{background:rgba(192,57,43,0.12);color:var(--red);border:1px solid rgba(192,57,43,0.3)}
+  .next-rev-chip.semana{background:rgba(91,143,168,0.12);color:var(--accent3);border:1px solid rgba(91,143,168,0.3)}
+  .next-rev-chip.mes{background:rgba(212,119,58,0.12);color:var(--accent2);border:1px solid rgba(212,119,58,0.3)}
+  .next-rev-chip.ok2{background:rgba(39,174,96,0.08);color:var(--green);border:1px solid rgba(39,174,96,0.2)}
+
+  /* MODAL TOAST DE REVISÃO SUGERIDA */
+  .rev-suggestion{background:rgba(232,197,71,0.07);border:1px solid rgba(232,197,71,0.2);border-radius:10px;padding:0.9rem 1rem;margin-bottom:1rem;display:flex;align-items:center;gap:0.75rem}
+  .rev-suggestion svg{width:18px;height:18px;stroke:var(--accent);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+  .rev-suggestion-text{font-size:0.82rem;color:var(--text2);line-height:1.5}
+  .rev-suggestion-text strong{color:var(--accent);font-weight:700}
+
+  /* LIST VIEW */
+  .list-view .cards-grid{grid-template-columns:1fr;gap:0.38rem}
+  .list-view .error-card{display:flex;align-items:stretch}
+  .list-view .card-stripe{width:4px;height:auto;min-width:4px}
+  .list-view .card-body{display:flex;align-items:center;gap:1rem;flex:1;padding:0.68rem 0.95rem}
+  .list-view .card-header{margin-bottom:0;flex:1}
+  .list-view .card-onde,.list-view .card-tags{display:none}
+  .list-view .card-footer{border-top:none;padding-top:0}
+
+  /* MODAIS */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(5px);opacity:0;pointer-events:none;transition:opacity 0.2s}
+  .modal-overlay.open{opacity:1;pointer-events:all}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:680px;max-height:92vh;overflow-y:auto;transform:translateY(18px);transition:transform 0.2s}
+  .modal-overlay.open .modal{transform:translateY(0)}
+  .modal-header{padding:1.35rem 1.35rem 0;display:flex;align-items:center;gap:0.75rem}
+  .modal-header h3{font-family:'Playfair Display',serif;font-size:1.15rem;flex:1;display:flex;align-items:center;gap:0.5rem}
+  .modal-header h3 svg{width:18px;height:18px;stroke:var(--accent);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .modal-close{background:var(--surface2);border:none;color:var(--text2);width:28px;height:28px;border-radius:50%;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center}
+  .modal-close svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round}
+  .modal-close:hover{background:var(--border);color:var(--text)}
+  .modal-body{padding:1.35rem}
+  .modal-footer{padding:0.85rem 1.35rem 1.35rem;display:flex;justify-content:flex-end;gap:0.6rem}
+
+  /* FORM */
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.88rem}
+  .form-group{display:flex;flex-direction:column;gap:0.32rem}
+  .form-group.full{grid-column:1/-1}
+  label{font-size:0.7rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;display:flex;align-items:center;gap:0.3rem}
+  label svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .form-control{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.62rem 0.88rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.87rem;transition:border-color 0.2s;outline:none;width:100%}
+  .form-control:focus{border-color:var(--accent)}
+  textarea.form-control{resize:vertical;min-height:75px}
+  select.form-control{cursor:pointer}
+  .form-control::placeholder{color:var(--text3)}
+  .form-hint{font-size:0.66rem;color:var(--text3)}
+  .materia-custom-row{display:flex;gap:0.45rem;margin-top:0.38rem}
+  .materia-custom-row input{flex:1}
+  .btn-add-mat{background:var(--accent);color:#000;border:none;padding:0 0.88rem;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.78rem;white-space:nowrap;transition:background 0.15s}
+  .btn-add-mat:hover{background:#f0d060}
+  .diff-selector{display:flex;gap:0.38rem}
+  .diff-opt{flex:1;padding:0.52rem;border:1px solid var(--border);border-radius:8px;cursor:pointer;text-align:center;font-size:0.76rem;font-weight:700;transition:all 0.15s;background:none;color:var(--text2);display:flex;align-items:center;justify-content:center;gap:0.35rem}
+  .diff-opt svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+  .diff-opt.facil:hover,.diff-opt.facil.sel{background:rgba(39,174,96,0.1);border-color:var(--green);color:var(--green)}
+  .diff-opt.medio:hover,.diff-opt.medio.sel{background:rgba(232,197,71,0.1);border-color:var(--yellow);color:var(--yellow)}
+  .diff-opt.dificil:hover,.diff-opt.dificil.sel{background:rgba(192,57,43,0.1);border-color:var(--red);color:var(--red)}
+  .lei-group{display:grid;grid-template-columns:2fr 1fr;gap:0.48rem}
+  .btn-cancel{background:none;border:1px solid var(--border);color:var(--text2);padding:0.58rem 1.35rem;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.87rem;transition:all 0.2s}
+  .btn-cancel:hover{border-color:var(--text2);color:var(--text)}
+  .btn-save{background:var(--accent);color:#000;border:none;padding:0.58rem 1.35rem;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:700;font-size:0.87rem;transition:all 0.2s;display:flex;align-items:center;gap:0.4rem}
+  .btn-save svg{width:14px;height:14px;stroke:#000;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .btn-save:hover{background:#f0d060}
+
+  /* DETAIL */
+  .detail-section{background:var(--surface2);border-radius:8px;padding:0.88rem;margin-bottom:0.88rem}
+  .detail-label{font-size:0.62rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:0.32rem;display:flex;align-items:center;gap:0.3rem}
+  .detail-label svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .detail-value{font-size:0.87rem;line-height:1.6}
+  .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.62rem;margin-bottom:0.88rem}
+  .keywords{display:flex;flex-wrap:wrap;gap:0.32rem}
+  .keyword{background:rgba(232,197,71,0.08);color:var(--accent);font-size:0.7rem;padding:0.2rem 0.52rem;border-radius:50px;font-family:'DM Mono',monospace}
+  .rev-actions{display:flex;gap:0.38rem;flex-wrap:wrap;margin-top:0.48rem}
+  .rev-btn{flex:1;padding:0.62rem;border-radius:8px;border:none;cursor:pointer;font-weight:700;font-size:0.76rem;transition:all 0.15s;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:0.35rem}
+  .rev-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .rev-btn.r24{background:rgba(232,197,71,0.1);color:var(--accent);border:1px solid var(--accent)}
+  .rev-btn.r7{background:rgba(91,143,168,0.1);color:var(--accent3);border:1px solid var(--accent3)}
+  .rev-btn.r30{background:rgba(212,119,58,0.1);color:var(--accent2);border:1px solid var(--accent2)}
+  .rev-btn:hover{transform:scale(1.03)}
+
+  /* STORAGE METER */
+  .storage-meter-wrap{background:var(--surface2);border-radius:10px;padding:0.75rem;margin-bottom:0.75rem}
+  .storage-meter-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem}
+  .storage-label{font-size:0.7rem;font-weight:700;color:var(--text2);display:flex;align-items:center;gap:0.35rem;text-transform:uppercase;letter-spacing:0.8px}
+  .storage-label svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .storage-pct{font-family:'DM Mono',monospace;font-size:0.75rem;font-weight:700;color:var(--accent)}
+  .storage-bar-bg{width:100%;height:6px;background:var(--border);border-radius:50px;overflow:hidden;margin-bottom:0.4rem}
+  .storage-bar-fill{height:100%;border-radius:50px;background:var(--accent);transition:width 0.6s ease, background 0.3s ease;width:0%}
+  .storage-bar-fill.warn{background:var(--accent2)}
+  .storage-bar-fill.danger{background:var(--red);animation:dangerPulse 1.5s ease-in-out infinite}
+  @keyframes dangerPulse{0%,100%{opacity:1}50%{opacity:0.6}}
+  .storage-detail{font-size:0.65rem;color:var(--text3);line-height:1.4}
+  .storage-alert{margin-top:0.4rem;font-size:0.65rem;font-weight:700;padding:0.3rem 0.5rem;border-radius:6px;display:none}
+  .storage-alert.warn{display:block;background:rgba(212,119,58,0.12);color:var(--accent2)}
+  .storage-alert.danger{display:block;background:rgba(192,57,43,0.12);color:var(--red)}
+
+  /* BACKUP */
+  .backup-info{font-size:0.72rem;color:var(--text3);line-height:1.55;margin-bottom:0.75rem;padding:0.6rem 0.5rem;background:var(--surface2);border-radius:8px;border-left:2px solid var(--accent3)}
+  .backup-btn{width:100%;display:flex;align-items:center;gap:0.5rem;padding:0.6rem 0.75rem;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;transition:all 0.2s;margin-bottom:0.4rem;border:1px solid var(--border)}
+  .backup-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+  .export-btn{background:rgba(232,197,71,0.08);color:var(--accent);border-color:rgba(232,197,71,0.25)}
+  .export-btn:hover{background:rgba(232,197,71,0.15);border-color:var(--accent)}
+  .import-btn{background:rgba(91,143,168,0.08);color:var(--accent3);border-color:rgba(91,143,168,0.25)}
+  .import-btn:hover{background:rgba(91,143,168,0.15);border-color:var(--accent3)}
+  .backup-version{font-size:0.6rem;color:var(--text3);text-align:center;margin-top:0.5rem;letter-spacing:0.5px}
+
+  /* TELA DE NOME */
+  #setupName{position:fixed;inset:0;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:999;padding:2rem;text-align:center}
+  #setupName.visible{display:flex}
+  .setup-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2.5rem 2rem;width:100%;max-width:420px}
+  .setup-icon{width:64px;height:64px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem}
+  .setup-icon svg{width:30px;height:30px;stroke:#000;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .setup-box h2{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900;color:var(--text);margin-bottom:0.5rem}
+  .setup-box p{font-size:0.85rem;color:var(--text2);margin-bottom:1.5rem;line-height:1.6}
+  .setup-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:0.85rem 1rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:1rem;outline:none;transition:border-color 0.2s;margin-bottom:1rem;text-align:center}
+  .setup-input:focus{border-color:var(--accent)}
+  .setup-input::placeholder{color:var(--text3)}
+  .setup-btn{width:100%;background:var(--accent);color:#000;border:none;padding:0.9rem;border-radius:10px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:1rem;cursor:pointer;transition:all 0.2s}
+  .setup-btn:hover{background:#f0d060}
+  .owner-name{font-size:0.62rem;color:var(--accent);font-weight:600;letter-spacing:0.3px;margin-top:0.1rem}
+
+  /* ── FLASHCARDS ── */
+  .flash-stat-pill{display:inline-flex;align-items:center;gap:0.4rem;padding:0.35rem 0.9rem;border-radius:50px;font-size:0.78rem;font-weight:700;border:1px solid transparent}
+  .flash-stat-pill.green{background:rgba(39,174,96,0.1);color:var(--green);border-color:rgba(39,174,96,0.3)}
+  .flash-stat-pill.red{background:rgba(192,57,43,0.1);color:var(--red);border-color:rgba(192,57,43,0.3)}
+  .flash-stat-pill.yellow{background:rgba(232,197,71,0.1);color:var(--accent);border-color:rgba(232,197,71,0.3)}
+  .flash-empty{text-align:center;padding:3rem 2rem;color:var(--text3)}
+  .flash-empty svg{width:40px;height:40px;stroke:var(--text3);fill:none;stroke-width:1.4;stroke-linecap:round;margin:0 auto 1rem;display:block;opacity:0.4}
+  .flash-empty h3{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--text2);margin-bottom:0.4rem}
+  .flash-empty p{font-size:0.83rem}
+  .flash-card-wrap{max-width:520px;margin:0 auto}
+  .flash-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;min-height:220px;cursor:pointer;position:relative;perspective:1000px;transition:transform 0.6s;transform-style:preserve-3d;margin-bottom:1.5rem}
+  .flash-card.flipped{transform:rotateY(180deg)}
+  .flash-front,.flash-back{position:absolute;inset:0;padding:2rem;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;backface-visibility:hidden;border-radius:16px}
+  .flash-back{transform:rotateY(180deg);background:var(--surface)}
+  .flash-label{font-size:0.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:1rem}
+  .flash-content{font-size:1rem;color:var(--text);line-height:1.6;font-weight:500}
+  .flash-hint{font-size:0.72rem;color:var(--text3);margin-top:1.5rem}
+  .flash-actions{display:flex;gap:1rem;justify-content:center;margin-bottom:1rem}
+  .flash-btn{padding:0.75rem 2rem;border-radius:10px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:700;font-size:0.9rem;display:flex;align-items:center;gap:0.5rem;transition:all 0.2s}
+  .flash-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round}
+  .flash-btn.wrong{background:rgba(192,57,43,0.15);color:var(--red);border:1px solid var(--red)}
+  .flash-btn.correct{background:rgba(39,174,96,0.15);color:var(--green);border:1px solid var(--green)}
+  .flash-btn:hover{transform:scale(1.04)}
+  .flash-progress{text-align:center;font-size:0.78rem;color:var(--text3);font-family:'DM Mono',monospace}
+
+  /* ── NOTAS ── */
+  .note-filter-bar{display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:1.4rem}
+  .note-filter{padding:0.35rem 0.85rem;border-radius:50px;border:1px solid var(--border);background:none;color:var(--text2);font-size:0.76rem;cursor:pointer;transition:all 0.15s;font-family:'DM Sans',sans-serif}
+  .note-filter:hover,.note-filter.active{background:var(--surface2);color:var(--text);border-color:var(--text3)}
+  .note-filter.active{border-color:var(--accent);color:var(--accent)}
+  .notes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem}
+  .note-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem;position:relative;transition:all 0.2s}
+  .note-card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+  .note-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:0.6rem}
+  .note-tag{font-size:0.65rem;font-weight:700;padding:0.2rem 0.6rem;border-radius:50px}
+  .note-tag.importante{background:rgba(192,57,43,0.12);color:var(--red)}
+  .note-tag.revisar{background:rgba(232,197,71,0.12);color:var(--accent)}
+  .note-tag.priorizar{background:rgba(39,174,96,0.12);color:var(--green)}
+  .note-tag.nao-esquecer{background:rgba(91,143,168,0.12);color:var(--accent3)}
+  .note-title{font-size:0.92rem;font-weight:700;color:var(--text);margin-bottom:0.4rem}
+  .note-body{font-size:0.82rem;color:var(--text2);line-height:1.6;white-space:pre-wrap}
+  .note-date{font-size:0.65rem;color:var(--text3);margin-top:0.6rem;font-family:'DM Mono',monospace}
+  .note-del{background:none;border:none;color:var(--text3);cursor:pointer;padding:0.2rem;display:flex;transition:color 0.15s}
+  .note-del:hover{color:var(--red)}
+  .note-del svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+
+  /* ── CRONÔMETRO ── */
+  .timer-main{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2.5rem;text-align:center;margin-bottom:1.5rem}
+  .timer-display{font-family:'DM Mono',monospace;font-size:clamp(2.5rem,8vw,4rem);font-weight:500;color:var(--accent);letter-spacing:0.05em;margin-bottom:0.5rem;line-height:1}
+  .timer-session-label{font-size:0.82rem;color:var(--text2);margin-bottom:1.5rem}
+  .timer-controls{display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap}
+  .timer-btn{padding:0.7rem 1.8rem;border-radius:50px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:700;font-size:0.9rem;display:flex;align-items:center;gap:0.45rem;transition:all 0.2s}
+  .timer-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .timer-btn.start{background:var(--accent);color:#000}
+  .timer-btn.start svg{stroke:#000;fill:#000}
+  .timer-btn.pause{background:rgba(232,197,71,0.12);color:var(--accent);border:1px solid var(--accent)}
+  .timer-btn.stop{background:rgba(192,57,43,0.12);color:var(--red);border:1px solid var(--red)}
+  .timer-btn:hover{transform:scale(1.04)}
+  /* Chart */
+  .chart-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin-bottom:1.5rem}
+  .chart-wrap{position:relative;width:100%;overflow:hidden}
+  .chart-legend{display:flex;align-items:center;gap:0.4rem;margin-top:0.75rem;font-size:0.75rem;color:var(--text2)}
+  .legend-dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+  .legend-dot.green{background:var(--green)}
+  .legend-dot.red{background:var(--red)}
+  /* History */
+  .timer-history-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem}
+  .timer-session-item{display:flex;align-items:center;gap:1rem;padding:0.75rem 0;border-bottom:1px solid var(--border)}
+  .timer-session-item:last-child{border-bottom:none}
+  .session-icon{width:36px;height:36px;background:rgba(232,197,71,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .session-icon svg{width:16px;height:16px;stroke:var(--accent);fill:none;stroke-width:1.8;stroke-linecap:round}
+  .session-info{flex:1}
+  .session-duration{font-family:'DM Mono',monospace;font-size:0.95rem;font-weight:600;color:var(--text)}
+  .session-meta{font-size:0.7rem;color:var(--text3);margin-top:0.1rem}
+  .timer-share-btn{background:rgba(39,174,96,0.1);color:var(--green);border:1px solid var(--green);padding:0.45rem 1rem;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;font-size:0.78rem;display:flex;align-items:center;gap:0.35rem;transition:all 0.2s}
+  .timer-share-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+  .timer-share-btn:hover{background:rgba(39,174,96,0.2)}
+  /* Share Card */
+  .share-card{background:linear-gradient(135deg,#1a1916,#0f0e0c);border:1px solid #3e3c38;border-radius:20px;padding:2rem;color:var(--text);text-align:center}
+  .share-card-header{display:flex;align-items:center;gap:0.75rem;margin-bottom:1.5rem;justify-content:center}
+  .share-card-logo{font-size:2rem}
+  .share-card-title{font-family:'Playfair Display',serif;font-weight:900;font-size:1.1rem;color:var(--text)}
+  .share-card-sub{font-size:0.7rem;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px}
+  .share-card-name{font-size:1rem;color:var(--text2);margin-bottom:0.5rem}
+  .share-card-time{font-family:'DM Mono',monospace;font-size:3rem;font-weight:500;color:var(--accent);line-height:1;margin-bottom:0.5rem}
+  .share-card-stats{font-size:0.82rem;color:var(--text2);margin-bottom:1rem;line-height:1.8}
+  .share-card-date{font-size:0.7rem;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:1.5rem}
+  .share-card-footer{font-size:0.6rem;color:var(--text3);letter-spacing:1px;opacity:0.5}
+  .flash-back-btn{margin-top:1.2rem;background:none;border:1px solid var(--border);color:var(--text2);padding:0.45rem 1rem;border-radius:50px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.78rem;display:inline-flex;align-items:center;gap:0.35rem;transition:all 0.2s}
+  .flash-back-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .flash-back-btn:hover{border-color:var(--accent);color:var(--accent)}
+  .flash-card-badge{font-size:0.65rem;font-weight:700;padding:0.18rem 0.6rem;border-radius:50px;background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
+  .flash-card-badge.caderno{background:rgba(91,143,168,0.1);color:var(--accent3);border-color:rgba(91,143,168,0.3)}
+  .flash-card-badge.materia{background:rgba(232,197,71,0.08);color:var(--accent);border-color:rgba(232,197,71,0.2)}
+  .session-del{background:none;border:none;color:var(--text3);cursor:pointer;padding:0.3rem;display:flex;transition:color 0.15s;margin-left:auto}
+  .session-del svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+  .session-del:hover{color:var(--red)}
+  .note-tag-btn.importante.active{background:rgba(192,57,43,0.12);color:var(--red);border-color:var(--red)}
+  .note-tag-btn.revisar.active{background:rgba(232,197,71,0.12);color:var(--accent);border-color:var(--accent)}
+  .note-tag-btn.priorizar.active{background:rgba(39,174,96,0.12);color:var(--green);border-color:var(--green)}
+  .note-tag-btn.nao-esquecer.active{background:rgba(91,143,168,0.12);color:var(--accent3);border-color:var(--accent3)}
+
+  /* PASTAS POR MATÉRIA */
+  .materia-folders-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;margin-bottom:1rem}
+  .materia-folder-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.25rem;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden}
+  .materia-folder-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:#3e3c38}
+  .materia-folder-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--fc,var(--accent));border-radius:14px 14px 0 0}
+  .mf-icon{width:44px;height:44px;border-radius:10px;background:rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;margin-bottom:0.9rem;border:1px solid rgba(255,255,255,0.05)}
+  .mf-icon svg{width:22px;height:22px;stroke:var(--fc,var(--accent));fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .mf-name{font-size:0.88rem;font-weight:700;color:var(--text);margin-bottom:0.25rem;line-height:1.3}
+  .mf-count{font-size:0.7rem;color:var(--text3);margin-bottom:0.65rem}
+  .mf-badges{display:flex;flex-wrap:wrap;gap:0.3rem;align-items:center;margin-bottom:0.5rem}
+  .mf-badge{font-size:0.62rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:50px}
+  .mf-badge.dif{background:rgba(192,57,43,0.1);color:var(--red)}
+  .mf-badge.med{background:rgba(232,197,71,0.1);color:var(--accent)}
+  .mf-badge.fac{background:rgba(39,174,96,0.1);color:var(--green)}
+  .mf-alert{display:inline-flex;align-items:center;gap:0.3rem;font-size:0.63rem;font-weight:700;color:var(--red);padding:0.2rem 0.5rem;background:rgba(192,57,43,0.1);border-radius:50px;animation:alertPulse 2s ease-in-out infinite}
+  .mf-alert svg{width:9px;height:9px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round}
+  @keyframes alertPulse{0%,100%{opacity:1}50%{opacity:0.55}}
+  .mf-ok{display:inline-flex;align-items:center;gap:0.3rem;font-size:0.63rem;color:var(--green);padding:0.2rem 0.5rem;background:rgba(39,174,96,0.07);border-radius:50px}
+  .mf-ok svg{width:9px;height:9px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round}
+  @media(max-width:768px){.materia-folders-grid{grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:0.65rem}}
+
+  /* MOTIVATIONAL BAR */
+  .motivational-bar{background:linear-gradient(135deg,rgba(232,197,71,0.06),rgba(232,197,71,0.02));border-top:1px solid rgba(232,197,71,0.15);padding:0.7rem 1.5rem;display:flex;align-items:center;justify-content:center;gap:0.5rem;font-size:0.78rem;color:var(--text2);font-style:italic;text-align:center;line-height:1.5}
+  .motivational-bar svg{width:12px;height:12px;stroke:var(--accent);fill:rgba(232,197,71,0.3);stroke-width:1.5;flex-shrink:0}
+  @media(max-width:768px){.motivational-bar{padding:0.6rem 1rem;font-size:0.72rem;margin-bottom:0}}
+
+  /* COPYRIGHT */
+  .copyright-notice{margin-top:0.75rem;padding:0.6rem 0.5rem;background:var(--surface);border-radius:8px;border:1px solid var(--border);font-size:0.6rem;color:var(--text3);line-height:1.6;text-align:center}
+  .copyright-notice svg{width:11px;height:11px;stroke:var(--text3);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;display:inline-block;vertical-align:middle;margin-right:2px}
+  .copyright-bar{background:var(--surface);border-top:1px solid var(--border);padding:0.5rem 1.5rem;display:flex;align-items:center;justify-content:center;gap:0.4rem;font-size:0.6rem;color:var(--text3);text-align:center;line-height:1.5}
+  .copyright-bar svg{width:10px;height:10px;stroke:var(--text3);fill:none;stroke-width:1.8;stroke-linecap:round;flex-shrink:0}
+  @media(max-width:768px){.copyright-bar{padding:0.5rem 1rem;margin-bottom:56px;font-size:0.58rem}}
+
+  /* MODAL IMPORT CONFIRM */
+  .import-preview{background:var(--surface2);border-radius:8px;padding:1rem;margin:1rem 0}
+  .import-preview-row{display:flex;justify-content:space-between;align-items:center;padding:0.35rem 0;border-bottom:1px solid var(--border);font-size:0.83rem}
+  .import-preview-row:last-child{border-bottom:none}
+  .import-preview-row span:first-child{color:var(--text2)}
+  .import-preview-row span:last-child{font-family:'DM Mono',monospace;color:var(--accent);font-weight:600}
+  .toast{position:fixed;bottom:2rem;right:2rem;z-index:999;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:0.82rem 1.15rem;display:flex;align-items:center;gap:0.62rem;transform:translateY(90px);transition:transform 0.3s;max-width:270px}
+  .toast.show{transform:translateY(0)}
+  .toast svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+  .toast .toast-msg{font-size:0.83rem}
+
+  ::-webkit-scrollbar{width:5px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+  @media(max-width:768px){
+    /* ── FORCE DARK BACKGROUND everywhere on mobile ── */
+    html{background:#0f0e0c}
+    body{background:#0f0e0c !important;color:var(--text) !important}
+    main{background:#0f0e0c;padding:1.2rem 1rem}
+
+    .main-layout{grid-template-columns:1fr}
+    aside{display:none}
+    .form-grid{grid-template-columns:1fr}
+    .detail-grid{grid-template-columns:1fr}
+    .lei-group{grid-template-columns:1fr}
+    .cards-grid{grid-template-columns:1fr}
+    .toolbar{flex-direction:column;align-items:stretch}
+    .search-box{min-width:unset;width:100%}
+    .header-credit{display:none}
+
+    /* ── PAGE HEADING: destaque no mobile ── */
+    .page-heading{
+      text-align:center;
+      margin-bottom:1.4rem;
+      padding:1.2rem 0 1.2rem;
+      border-bottom:1px solid var(--border);
+      background:#0f0e0c;
+    }
+    .page-heading .eyebrow{font-size:0.6rem;letter-spacing:3px;text-transform:uppercase;color:var(--text3)}
+    .page-heading h1{font-family:'Playfair Display',serif;font-size:1.8rem !important;font-weight:900;letter-spacing:-0.5px;color:var(--text) !important;line-height:1.15}
+    .page-heading h1 span{color:var(--accent) !important}
+
+    /* ── TOOLBAR h2 "Todos os Erros" ── */
+    .toolbar h2{font-family:'Playfair Display',serif;font-size:1.5rem !important;font-weight:900;color:var(--text) !important}
+
+    /* ── BTN ADD full width ── */
+    .btn-add{width:100%;justify-content:center;padding:0.85rem;font-size:0.95rem}
+
+    /* ── FILTER ── */
+    .filter-bar{gap:0.5rem}
+    .filter-chip{font-size:0.8rem;padding:0.42rem 1rem}
+    .filter-chip.active{background:var(--surface2) !important}
+
+    /* ── REVISION BANNER ── */
+    .revision-banner{background:#1a1916 !important}
+    .revision-banner h3{color:var(--text) !important}
+
+    /* ── SEARCH BOX ── */
+    .search-box{background:var(--surface) !important}
+    .search-box input{color:var(--text) !important}
+    .search-box input::placeholder{color:var(--text3) !important}
+
+    /* ── CARDS ── */
+    .error-card{background:var(--surface) !important;border-color:var(--border) !important}
+    .card-assunto{color:var(--text) !important}
+
+    /* ── MODALS ── */
+    .modal{max-height:95vh}
+    .form-control{font-size:16px}
+
+    /* ── TOAST ── */
+    .toast{bottom:5rem;right:1rem;left:1rem;max-width:unset}
+
+    /* ── VIEW TOGGLE: escondido ── */
+    .view-toggle{display:none}
+
+    /* ── BOTTOM NAV BAR ── */
+    .mobile-bar{display:flex}
+    body{padding-bottom:64px}
+
+    /* ── MOBILE CADERNOS PANEL ── */
+    .mobile-cadernos-panel{display:block}
+  }
+
+  /* MOBILE BOTTOM BAR — hidden on desktop */
+  .mobile-bar{
+    display:none;
+    position:fixed;bottom:0;left:0;right:0;z-index:150;
+    background:rgba(15,14,12,0.97);
+    backdrop-filter:blur(14px);
+    border-top:1px solid var(--border);
+    height:56px;align-items:center;justify-content:space-around;
+    padding:0 0.5rem;
+  }
+  .mobile-bar-btn{
+    flex:1;display:flex;flex-direction:column;align-items:center;
+    gap:0.22rem;background:none;border:none;cursor:pointer;
+    color:var(--text3);font-family:'DM Sans',sans-serif;
+    font-size:0.58rem;font-weight:600;letter-spacing:0.3px;
+    padding:0.4rem 0;transition:color 0.15s;
+  }
+  .mobile-bar-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .mobile-bar-btn.active{color:var(--accent)}
+  .mobile-bar-btn.btn-new-mobile{
+    color:#000;background:var(--accent);border-radius:12px;
+    padding:0.5rem 1.4rem;flex:none;flex-direction:row;gap:0.3rem;
+    font-size:0.78rem;font-weight:700;letter-spacing:0;
+  }
+  .mobile-bar-btn.btn-new-mobile svg{width:16px;height:16px;stroke:#000}
+
+  /* MOBILE CADERNOS DRAWER */
+  .mobile-cadernos-panel{display:none}
+  .mobile-drawer-overlay{
+    display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);
+    z-index:200;backdrop-filter:blur(4px);
+  }
+  .mobile-drawer-overlay.open{display:block}
+  .mobile-drawer{
+    position:fixed;bottom:0;left:0;right:0;z-index:210;
+    background:var(--surface);
+    border-top:1px solid var(--border);
+    border-radius:20px 20px 0 0;
+    padding:1.2rem 1.2rem 2.5rem;
+    max-height:80vh;overflow-y:auto;
+    transform:translateY(100%);transition:transform 0.3s ease;
+  }
+  .mobile-drawer.open{transform:translateY(0)}
+  .mobile-drawer-handle{
+    width:36px;height:4px;background:var(--border);
+    border-radius:2px;margin:0 auto 1.2rem;
+  }
+  .mobile-drawer-title{
+    font-family:'Playfair Display',serif;
+    font-size:1.1rem;font-weight:700;color:var(--text);
+    margin-bottom:1rem;
+  }
+  .mobile-folder-item{
+    display:flex;align-items:center;gap:0.65rem;
+    padding:0.75rem 0.8rem;border-radius:10px;
+    background:var(--surface2);border:1px solid var(--border);
+    margin-bottom:0.5rem;cursor:pointer;transition:all 0.15s;
+  }
+  .mobile-folder-item:hover,.mobile-folder-item.active{border-color:var(--accent)}
+  .mobile-folder-item.active{background:rgba(232,197,71,0.08)}
+  .mobile-folder-item svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;color:var(--text2);flex-shrink:0}
+  .mobile-folder-item.active svg{color:var(--accent)}
+  .mobile-folder-name{font-size:0.9rem;color:var(--text2);flex:1}
+  .mobile-folder-item.active .mobile-folder-name{color:var(--accent);font-weight:600}
+  .mobile-folder-count{font-size:0.68rem;color:var(--text3);background:var(--surface);padding:0.12rem 0.45rem;border-radius:10px}
+  .mobile-folder-del{background:none;border:none;color:transparent;cursor:pointer;padding:0.2rem;display:flex;transition:color 0.15s}
+  .mobile-folder-del svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+  .mobile-folder-item:hover .mobile-folder-del{color:var(--text3)}
+  .mobile-folder-del:hover{color:var(--red)!important}
+  .mobile-folder-input{background:transparent;border:none;outline:none;color:inherit;font-family:'DM Sans',sans-serif;font-size:0.9rem;flex:1;min-width:0}
+  .mobile-add-folder-btn{
+    width:100%;padding:0.72rem;border:1px dashed var(--border);
+    background:none;color:var(--text3);border-radius:10px;
+    cursor:pointer;font-size:0.85rem;transition:all 0.2s;
+    display:flex;align-items:center;justify-content:center;gap:0.45rem;
+    margin-top:0.4rem;font-family:'DM Sans',sans-serif;
+  }
+  .mobile-add-folder-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .mobile-add-folder-btn:hover{border-color:var(--accent);color:var(--accent)}
+  .mobile-drawer-section{margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--border)}
+  .mobile-drawer-section-label{font-size:0.65rem;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--text3);margin-bottom:0.75rem}
+  .mobile-backup-row{display:flex;gap:0.5rem}
+  .mobile-backup-row button{flex:1;display:flex;align-items:center;justify-content:center;gap:0.4rem;padding:0.65rem;border-radius:8px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:0.78rem;cursor:pointer;border:1px solid var(--border);transition:all 0.15s}
+  .mobile-backup-row svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .mobile-backup-export{background:rgba(232,197,71,0.08);color:var(--accent);border-color:rgba(232,197,71,0.25)!important}
+  .mobile-backup-import{background:rgba(91,143,168,0.08);color:var(--accent3);border-color:rgba(91,143,168,0.25)!important}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ SPLASH ═══════════════════ -->
+<div id="splash">
+  <div class="splash-logo">
+    <!-- Ícone: livro aberto / caderno -->
+    <svg viewBox="0 0 24 24">
+      <path d="M2 6c0-1.1.9-2 2-2h7v16H4a2 2 0 0 1-2-2V6z"/>
+      <path d="M22 6c0-1.1-.9-2-2-2h-7v16h7a2 2 0 0 0 2-2V6z"/>
+      <line x1="12" y1="4" x2="12" y2="20"/>
+      <line x1="7" y1="9" x2="9" y2="9"/>
+      <line x1="7" y1="13" x2="9" y2="13"/>
+      <line x1="15" y1="9" x2="17" y2="9"/>
+      <line x1="15" y1="13" x2="17" y2="13"/>
+    </svg>
+  </div>
+
+  <h1>MEU CADERNO<br>DE <span>ERROS</span></h1>
+  <p class="splash-sub">Registre cada erro, revise no momento certo<br>e garanta a sua aprovação.</p>
+
+  <button class="btn-primary" onclick="enterApp()">
+    <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+    Abrir Meu Caderno
+  </button>
+
+  <!-- Assinatura — elegante, visível mas discreta -->
+  <div class="splash-credit">
+    <div class="splash-credit-inner">
+      <!-- TikTok -->
+      <svg viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.34 6.34 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.7a8.18 8.18 0 0 0 4.78 1.52V6.77a4.85 4.85 0 0 1-1.01-.08z"/></svg>
+      <!-- Instagram -->
+      <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
+      <span>@aprovamapmais</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SETUP NOME ═══════════════════ -->
+<div id="setupName">
+  <div class="setup-box">
+    <div class="setup-icon">
+      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    </div>
+    <h2>Qual é o seu nome?</h2>
+    <p>Personalize seu caderno! Seu nome aparecerá no painel para que ele seja verdadeiramente <strong style="color:var(--accent)">seu</strong>.</p>
+    <input class="setup-input" id="setupNameInput" type="text" placeholder="Digite seu primeiro nome..." maxlength="30">
+    <button class="setup-btn" onclick="saveOwnerName()">
+      Abrir Meu Caderno →
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════ APP ═══════════════════ -->
+<div id="app">
+
+  <header>
+    <div class="header-logo">
+      <span class="brand-tag">painel do concurseiro</span>
+      <span class="brand-name">MEU CADERNO DE <span>ERROS</span></span>
+      <span class="owner-name" id="headerOwnerName"></span>
+    </div>
+    <nav class="header-nav">
+      <button class="nav-btn active" id="btnHome" onclick="showView('home')">
+        <svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9.5z"/><polyline points="9 21 9 12 15 12 15 21"/></svg>
+        Início
+      </button>
+      <button class="nav-btn" id="btnRevision" onclick="showView('revision')">
+        <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Revisão
+      </button>
+      <button class="nav-btn" id="btnFlash" onclick="showView('flashcards')">
+        <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M12 8v8M8 12h8"/></svg>
+        Flashcards
+      </button>
+      <button class="nav-btn" id="btnNotes" onclick="showView('notes')">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Notas
+      </button>
+      <button class="nav-btn" id="btnTimer" onclick="showView('timer')">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Cronômetro
+      </button>
+    </nav>
+    <!-- Crédito header: suave, quase imperceptível -->
+    <div class="header-credit">
+      <svg viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.34 6.34 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.7a8.18 8.18 0 0 0 4.78 1.52V6.77a4.85 4.85 0 0 1-1.01-.08z"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
+      <span>@aprovamapmais</span>
+    </div>
+  </header>
+
+  <div class="main-layout">
+    <!-- SIDEBAR -->
+    <aside>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Meus Cadernos</div>
+        <div id="folderList"></div>
+        <button class="add-folder-btn" onclick="addFolder()">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Novo Caderno
+        </button>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Estatísticas</div>
+        <div class="stats-grid">
+          <div class="stat-card"><div class="num" id="statTotal">0</div><div class="lbl">Total</div></div>
+          <div class="stat-card"><div class="num" id="statPend">0</div><div class="lbl">Pendentes</div></div>
+          <div class="stat-card"><div class="num" id="statDif">0</div><div class="lbl">Difíceis</div></div>
+          <div class="stat-card"><div class="num" id="statRev">0</div><div class="lbl">Revisadas</div></div>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Backup &amp; Atualização</div>
+
+        <!-- MEDIDOR DE ARMAZENAMENTO -->
+        <div class="storage-meter-wrap">
+          <div class="storage-meter-top">
+            <span class="storage-label">
+              <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M7 2v20"/><path d="M17 2v20"/><path d="M2 12h5"/><path d="M17 12h5"/><path d="M2 7h5"/><path d="M17 7h5"/><path d="M2 17h5"/><path d="M17 17h5"/></svg>
+              Armazenamento
+            </span>
+            <span class="storage-pct" id="storagePct">0%</span>
+          </div>
+          <div class="storage-bar-bg">
+            <div class="storage-bar-fill" id="storageBarFill"></div>
+          </div>
+          <div class="storage-detail" id="storageDetail">Calculando...</div>
+        </div>
+
+        <div class="backup-info">Ao receber uma versão nova, exporte aqui, abra o novo arquivo e importe. Seus dados voltam completos.</div>
+        <button class="backup-btn export-btn" onclick="exportData()">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Exportar meus dados
+        </button>
+        <button class="backup-btn import-btn" onclick="document.getElementById('importFile').click()">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Importar backup
+        </button>
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+        <div class="backup-version">v2.0 · MEU CADERNO DE ERROS</div>
+        <div class="copyright-notice">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M14.83 14.83a4 4 0 1 1 0-5.66"/></svg>
+          © 2025 APROVA MAP+ · @aprovamapmais<br>
+          Uso pessoal. Proibida a reprodução<br>e distribuição não autorizada.
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main>
+      <div id="viewHome">
+        <div class="page-heading">
+          <div class="eyebrow">painel do concurseiro</div>
+          <h1>MEU CADERNO DE <span>ERROS</span></h1>
+          <div id="pageOwnerName" style="font-size:0.8rem;color:var(--text2);margin-top:0.3rem"></div>
+        </div>
+
+        <!-- ALERTA DE REVISÕES ATRASADAS -->
+        <div class="alert-banner" id="alertBanner">
+          <div class="alert-banner-icon">
+            <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div class="alert-banner-text">
+            <h4 id="alertTitle">Você tem revisões atrasadas!</h4>
+            <p id="alertDesc">Algumas questões precisam ser revisadas agora.</p>
+          </div>
+          <button class="alert-banner-btn" onclick="showView('revision');renderRevisionView('all')">Ver agora</button>
+        </div>
+
+        <div class="revision-banner">
+          <div class="revision-banner-icon">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div>
+            <h3>Ciclo de Revisão Espaçada</h3>
+            <p>Revise no momento certo e fixe de vez.</p>
+          </div>
+          <div class="revision-pills">
+            <span class="rev-pill r24" onclick="filterRevision('24h')">24 horas</span>
+            <span class="rev-pill r7"  onclick="filterRevision('7d')">7 dias</span>
+            <span class="rev-pill r30" onclick="filterRevision('30d')">30 dias</span>
+          </div>
+          <div class="rev-count">
+            <span id="revPending" class="rev-badge">0</span>
+            <span style="font-size:0.76rem;color:var(--text2)">para revisar</span>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <h2 id="currentFolderTitle">Todos os Erros</h2>
+          <div class="search-box">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" placeholder="Buscar assunto, banca..." id="searchInput" oninput="renderCards()">
+          </div>
+          <div class="view-toggle">
+            <button class="view-btn active" id="viewGrid" title="Grade" onclick="toggleView('grid')">
+              <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            </button>
+            <button class="view-btn" id="viewList" title="Lista" onclick="toggleView('list')">
+              <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            </button>
+          </div>
+          <button class="btn-add" onclick="openForm()">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Novo Erro
+          </button>
+        </div>
+
+        <div class="filter-bar">
+          <button class="filter-chip active" onclick="filterDiff('',this)">Todos</button>
+          <button class="filter-chip" onclick="filterDiff('facil',this)">
+            <svg viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="#27ae60"/></svg> Fácil
+          </button>
+          <button class="filter-chip" onclick="filterDiff('medio',this)">
+            <svg viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="#e8c547"/></svg> Médio
+          </button>
+          <button class="filter-chip" onclick="filterDiff('dificil',this)">
+            <svg viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="#c0392b"/></svg> Difícil
+          </button>
+        </div>
+
+        <!-- BREADCRUMB de navegação nas pastas -->
+        <div id="materiaBreadcrumb" style="display:none;align-items:center;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap">
+          <button onclick="backToFolders()" style="background:none;border:none;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:0.3rem;font-family:'DM Sans',sans-serif;font-size:0.85rem;padding:0.35rem 0.75rem;border-radius:8px;border:1px solid var(--border);transition:all 0.15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+            <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><polyline points="15 18 9 12 15 6"/></svg>
+            Todas as Matérias
+          </button>
+          <svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:var(--text3);fill:none;stroke-width:2;stroke-linecap:round"><polyline points="9 18 15 12 9 6"/></svg>
+          <span id="breadcrumbMateria" style="font-size:0.85rem;font-weight:600;color:var(--accent)"></span>
+        </div>
+
+        <!-- GRID DE PASTAS POR MATÉRIA -->
+        <div id="materiaFoldersGrid" class="materia-folders-grid"></div>
+
+        <!-- GRID DE ERROS (dentro de uma matéria) -->
+        <div class="cards-grid" id="cardsGrid" style="display:none"></div>
+      </div>
+
+      <div id="viewRevision">
+        <h2 class="section-title">Painel de Revisão</h2>
+        <p class="section-subtitle">Questões pendentes de revisão por prioridade.</p>
+        <div class="revision-pills" style="margin-bottom:1.35rem;display:flex;gap:.38rem">
+          <span class="rev-pill r24" style="cursor:pointer" onclick="renderRevisionView('24h')">24h</span>
+          <span class="rev-pill r7"  style="cursor:pointer" onclick="renderRevisionView('7d')">7 dias</span>
+          <span class="rev-pill r30" style="cursor:pointer" onclick="renderRevisionView('30d')">30 dias</span>
+          <span class="rev-pill" style="background:var(--surface2);color:var(--text2);cursor:pointer;border:1px solid var(--border)" onclick="renderRevisionView('all')">Todas</span>
+        </div>
+        <div class="cards-grid" id="revisionGrid"></div>
+      </div>
+
+      <!-- ═══ FLASHCARDS ═══ -->
+      <div id="viewFlashcards" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem;flex-wrap:wrap;gap:0.5rem">
+          <div>
+            <h2 class="section-title">Flashcards</h2>
+            <p class="section-subtitle">Toque no cartão para ver a resposta. Avalie se acertou ou errou.</p>
+          </div>
+          <button class="btn-add" onclick="initFlashcards()" style="background:var(--surface2);color:var(--text2);border:1px solid var(--border)">
+            <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            Reiniciar
+          </button>
+        </div>
+
+        <!-- Filtro por caderno -->
+        <div style="margin-bottom:1.2rem">
+          <label style="font-size:0.7rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.4rem;display:block">Filtrar por Caderno</label>
+          <select class="form-control" id="flashFolderFilter" onchange="initFlashcards()" style="max-width:300px">
+            <option value="all">Todos os Cadernos</option>
+          </select>
+        </div>
+
+        <div id="flashStats" style="display:flex;gap:0.75rem;margin-bottom:1.5rem;flex-wrap:wrap">
+          <div class="flash-stat-pill green">✓ <span id="flashCorrect">0</span> Acertos</div>
+          <div class="flash-stat-pill red">✗ <span id="flashWrong">0</span> Erros</div>
+          <div class="flash-stat-pill yellow">⟳ <span id="flashRemain">0</span> Restantes</div>
+        </div>
+
+        <div id="flashContainer">
+          <div class="flash-empty" id="flashEmpty">
+            <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M12 8v8M8 12h8"/></svg>
+            <h3>Nenhum flashcard disponível</h3>
+            <p>Registre erros com Enunciado e Gabarito comentado para usar os flashcards.</p>
+          </div>
+          <div class="flash-card-wrap" id="flashCardWrap" style="display:none">
+
+            <!-- Info do caderno/matéria -->
+            <div id="flashCardMeta" style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;justify-content:center;flex-wrap:wrap"></div>
+
+            <div class="flash-card" id="flashCard" onclick="flipCard()">
+              <div class="flash-front" id="flashFront">
+                <div class="flash-label">PERGUNTA</div>
+                <div class="flash-content" id="flashQuestion"></div>
+                <div class="flash-hint">
+                  <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;display:inline-block;vertical-align:middle;margin-right:4px"><rect x="2" y="4" width="20" height="16" rx="2"/></svg>
+                  Toque para ver a resposta
+                </div>
+              </div>
+              <div class="flash-back" id="flashBack">
+                <div class="flash-label" style="color:var(--green)">RESPOSTA CORRETA</div>
+                <div class="flash-content" id="flashAnswer"></div>
+                <button class="flash-back-btn" onclick="event.stopPropagation();unflipCard()">
+                  <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+                  Ver pergunta novamente
+                </button>
+              </div>
+            </div>
+
+            <div class="flash-actions" id="flashActions" style="display:none">
+              <button class="flash-btn wrong" onclick="flashVote('wrong')">
+                <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                Errei
+              </button>
+              <button class="flash-btn correct" onclick="flashVote('correct')">
+                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                Acertei
+              </button>
+            </div>
+            <div class="flash-progress">
+              <span id="flashProgress">1 / 1</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ NOTAS RÁPIDAS ═══ -->
+      <div id="viewNotes" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem;flex-wrap:wrap;gap:0.5rem">
+          <div>
+            <h2 class="section-title">Notas Rápidas</h2>
+            <p class="section-subtitle">Anotações com etiquetas para organizar suas prioridades.</p>
+          </div>
+          <button class="btn-add" onclick="openNoteForm()">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nova Nota
+          </button>
+        </div>
+        <div class="note-filter-bar">
+          <button class="note-filter active" onclick="filterNotes('',this)">Todas</button>
+          <button class="note-filter" onclick="filterNotes('importante',this)">🔴 Importante</button>
+          <button class="note-filter" onclick="filterNotes('revisar',this)">🟡 Revisar</button>
+          <button class="note-filter" onclick="filterNotes('priorizar',this)">🟢 Priorizar</button>
+          <button class="note-filter" onclick="filterNotes('nao-esquecer',this)">🔵 Não Esquecer</button>
+        </div>
+        <div class="notes-grid" id="notesGrid"></div>
+      </div>
+
+      <!-- ═══ CRONÔMETRO ═══ -->
+      <div id="viewTimer" style="display:none">
+        <h2 class="section-title">Cronômetro de Estudo</h2>
+        <p class="section-subtitle">Registre seu tempo de estudo e acompanhe sua evolução.</p>
+
+        <!-- Timer principal -->
+        <div class="timer-main">
+          <div class="timer-display" id="timerDisplay">00:00:00</div>
+          <div class="timer-session-label" id="timerLabel">Pronto para começar</div>
+          <div class="timer-controls">
+            <button class="timer-btn start" id="timerStartBtn" onclick="timerStart()">
+              <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Iniciar
+            </button>
+            <button class="timer-btn pause" id="timerPauseBtn" onclick="timerPause()" style="display:none">
+              <svg viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+              Pausar
+            </button>
+            <button class="timer-btn stop" id="timerStopBtn" onclick="timerStop()" style="display:none">
+              <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+              Encerrar
+            </button>
+          </div>
+        </div>
+
+        <!-- Gráfico de evolução -->
+        <div class="chart-section">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+            <div>
+              <div class="sidebar-label" style="padding:0">Evolução dos Acertos nos Flashcards</div>
+            </div>
+          </div>
+          <div class="chart-wrap" id="chartWrap">
+            <canvas id="progressChart" height="160"></canvas>
+          </div>
+          <div class="chart-legend">
+            <span class="legend-dot green"></span> Acertos
+            <span class="legend-dot red" style="margin-left:1rem"></span> Erros
+          </div>
+        </div>
+
+        <!-- Histórico de sessões -->
+        <div class="timer-history-section">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+            <div class="sidebar-label" style="padding:0">Histórico de Sessões</div>
+            <button class="timer-share-btn" id="shareBtn" onclick="generateShareCard()" style="display:none">
+              <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              Gerar Card
+            </button>
+          </div>
+          <div id="timerHistory"></div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- SHARE CARD OVERLAY -->
+  <div id="shareOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:300;align-items:center;justify-content:center;padding:1rem">
+    <div style="max-width:420px;width:100%">
+      <div id="shareCard" class="share-card">
+        <div class="share-card-header">
+          <div class="share-card-logo">📓</div>
+          <div>
+            <div class="share-card-title">MEU CADERNO DE ERROS</div>
+            <div class="share-card-sub">Sessão de Estudo</div>
+          </div>
+        </div>
+        <div class="share-card-name" id="shareCardName"></div>
+        <div class="share-card-time" id="shareCardTime"></div>
+        <div class="share-card-stats" id="shareCardStats"></div>
+        <div class="share-card-date" id="shareCardDate"></div>
+        <div class="share-card-footer">© 2025 APROVA MAP+</div>
+      </div>
+      <div style="display:flex;gap:0.75rem;margin-top:1rem;justify-content:center">
+        <button class="btn-save" onclick="closeShareCard()">Fechar</button>
+        <button class="btn-add" onclick="downloadShareCard()" style="background:var(--green);color:#fff">
+          <svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Salvar Imagem
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MOTIVATIONAL BAR -->
+  <div class="motivational-bar">
+    <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    <span id="motivationalBar"></span>
+  </div>
+
+  <!-- COPYRIGHT BAR -->
+  <div class="copyright-bar">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M14.83 14.83a4 4 0 1 1 0-5.66"/></svg>
+    © 2025 APROVA MAP+ · Uso pessoal. Proibida a reprodução e distribuição não autorizada.
+  </div>
+
+  <!-- MOBILE BOTTOM BAR -->
+  <nav class="mobile-bar" id="mobileBar">
+    <button class="mobile-bar-btn active" id="mBarHome" onclick="mobileNav('home')">
+      <svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9.5z"/><polyline points="9 21 9 12 15 12 15 21"/></svg>
+      Início
+    </button>
+    <button class="mobile-bar-btn" id="mBarFolders" onclick="openMobileDrawer()">
+      <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      Cadernos
+    </button>
+    <button class="mobile-bar-btn btn-new-mobile" onclick="openForm()">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Novo Erro
+    </button>
+    <button class="mobile-bar-btn" id="mBarFlash" onclick="mobileNav('flashcards')">
+      <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M12 8v8M8 12h8"/></svg>
+      Flash
+    </button>
+    <button class="mobile-bar-btn" id="mBarTimer" onclick="mobileNav('timer')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Tempo
+    </button>
+  </nav>
+
+</div>
+
+<!-- MODAL NOTA -->
+<div class="modal-overlay" id="modalNote">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      <h3>
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Nova Nota
+      </h3>
+      <button class="modal-close" onclick="closeNoteForm()">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group" style="margin-bottom:0.9rem">
+        <label>Título</label>
+        <input type="text" class="form-control" id="noteTitle" placeholder="Ex: Revisar Lei 8112, Art. 37...">
+      </div>
+      <div class="form-group" style="margin-bottom:0.9rem">
+        <label>Conteúdo</label>
+        <textarea class="form-control" id="noteBody" placeholder="Escreva sua anotação..." style="min-height:100px"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Etiqueta</label>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+          <button class="note-tag-btn importante active" onclick="selectNoteTag('importante',this)">🔴 Importante</button>
+          <button class="note-tag-btn revisar" onclick="selectNoteTag('revisar',this)">🟡 Revisar</button>
+          <button class="note-tag-btn priorizar" onclick="selectNoteTag('priorizar',this)">🟢 Priorizar</button>
+          <button class="note-tag-btn nao-esquecer" onclick="selectNoteTag('nao-esquecer',this)">🔵 Não Esquecer</button>
+        </div>
+        <input type="hidden" id="noteTag" value="importante">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeNoteForm()">Cancelar</button>
+      <button class="btn-save" onclick="saveNote()">
+        <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+        Salvar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MOBILE CADERNOS DRAWER -->
+<div class="mobile-drawer-overlay" id="mobileDrawerOverlay" onclick="closeMobileDrawer()"></div>
+<div class="mobile-drawer" id="mobileDrawer">
+  <div class="mobile-drawer-handle"></div>
+  <div class="mobile-drawer-title">Meus Cadernos</div>
+  <div id="mobileFolderList"></div>
+  <button class="mobile-add-folder-btn" onclick="addFolderMobile()">
+    <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Novo Caderno
+  </button>
+  <div class="mobile-drawer-section">
+    <div class="mobile-drawer-section-label">Backup &amp; Dados</div>
+    <div class="mobile-backup-row">
+      <button class="mobile-backup-export" onclick="exportData();closeMobileDrawer()">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Exportar
+      </button>
+      <button class="mobile-backup-import" onclick="document.getElementById('importFile').click();closeMobileDrawer()">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Importar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL FORM -->
+<div class="modal-overlay" id="modalForm">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="formTitle">
+        <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Registrar Novo Erro
+      </h3>
+      <button class="modal-close" onclick="closeForm()">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label>
+            <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            Matéria *
+          </label>
+          <select class="form-control" id="fMateria" onchange="handleMateriaChange(this.value)">
+            <option value="">Selecione...</option>
+            <option>Português</option>
+            <option>Direito Constitucional</option>
+            <option>Direito Administrativo</option>
+            <option>Direito Penal</option>
+            <option>Direito Civil</option>
+            <option>Direito Processual Civil</option>
+            <option>Direito Processual Penal</option>
+            <option>Direito do Trabalho</option>
+            <option>Direito Tributário</option>
+            <option>Direito Previdenciário</option>
+            <option>Raciocínio Lógico</option>
+            <option>Matemática</option>
+            <option>Informática</option>
+            <option>Administração Pública</option>
+            <option>Contabilidade</option>
+            <option>Economia</option>
+            <option value="__outra__">+ Outra (criar nova)</option>
+          </select>
+          <div class="materia-custom-row" id="materiaCustomRow" style="display:none">
+            <input type="text" class="form-control" id="fMateriaCustom" placeholder="Ex: Ética, Legislação Específica...">
+            <button class="btn-add-mat" onclick="addCustomMateria()">Criar</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>
+            <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            Banca
+          </label>
+          <input type="text" class="form-control" id="fBanca" placeholder="Ex: CESPE, FCC, VUNESP...">
+        </div>
+
+        <div class="form-group full">
+          <label>
+            <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            Assunto / Tema *
+          </label>
+          <input type="text" class="form-control" id="fAssunto" placeholder="Ex: Concordância Nominal, Poderes da União...">
+        </div>
+
+        <div class="form-group full">
+          <label>
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Onde Errei
+          </label>
+          <textarea class="form-control" id="fOnde" placeholder="Descreva o ponto exato do erro, o que te confundiu..."></textarea>
+        </div>
+
+        <div class="form-group full">
+          <label>
+            <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            Nível de Dificuldade
+          </label>
+          <div class="diff-selector">
+            <button class="diff-opt facil" onclick="selDiff('facil',this)">
+              <svg viewBox="0 0 12 12"><circle cx="6" cy="6" r="5" fill="#27ae60"/></svg> Fácil
+            </button>
+            <button class="diff-opt medio" onclick="selDiff('medio',this)">
+              <svg viewBox="0 0 12 12"><circle cx="6" cy="6" r="5" fill="#e8c547"/></svg> Médio
+            </button>
+            <button class="diff-opt dificil sel" onclick="selDiff('dificil',this)">
+              <svg viewBox="0 0 12 12"><circle cx="6" cy="6" r="5" fill="#c0392b"/></svg> Difícil
+            </button>
+          </div>
+          <input type="hidden" id="fDiff" value="dificil">
+        </div>
+
+        <div class="form-group full" id="leiSection" style="display:none">
+          <label>
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            Lei / Artigo
+          </label>
+          <div class="lei-group">
+            <input type="text" class="form-control" id="fLei"    placeholder="Ex: Lei nº 8.112/1990, CF/88...">
+            <input type="text" class="form-control" id="fArtigo" placeholder="Art. 37, §2º...">
+          </div>
+        </div>
+
+        <div class="form-group full">
+          <label>
+            <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+            Palavras-chave
+          </label>
+          <input type="text" class="form-control" id="fKeywords" placeholder="Separe por vírgula: crase, pronome relativo, improbidade...">
+          <span class="form-hint">Separe cada palavra/frase com vírgula</span>
+        </div>
+
+        <div class="form-group full">
+          <label>
+            <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Enunciado / Questão
+          </label>
+          <textarea class="form-control" id="fQuestao" placeholder="Cole o enunciado da questão aqui..."></textarea>
+        </div>
+
+        <div class="form-group full">
+          <label>
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            Observações / Gabarito comentado
+          </label>
+          <textarea class="form-control" id="fObs" placeholder="Escreva a explicação, regra, macete..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>
+            <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            Caderno <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text3)">(opcional — padrão: matéria)</span>
+          </label>
+          <select class="form-control" id="fFolder"></select>
+        </div>
+
+        <div class="form-group">
+          <label>
+            <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Data da Questão
+          </label>
+          <input type="date" class="form-control" id="fData">
+        </div>
+
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeForm()">Cancelar</button>
+      <button class="btn-save" onclick="saveError()">
+        <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Salvar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETALHES -->
+<div class="modal-overlay" id="modalDetail">
+  <div class="modal" style="max-width:700px">
+    <div class="modal-header">
+      <h3 id="detailTitle">Detalhes</h3>
+      <button class="modal-close" onclick="closeDetail()">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="detailBody"></div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="deleteError()">Excluir</button>
+      <button class="btn-save" onclick="editError()">
+        <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Editar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL IMPORT CONFIRM -->
+<div class="modal-overlay" id="modalImport">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <h3>
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Importar Backup
+      </h3>
+      <button class="modal-close" onclick="closeImport()">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:0.85rem;color:var(--text2);margin-bottom:0.5rem">Encontrei os seguintes dados no seu backup:</p>
+      <div class="import-preview" id="importPreview"></div>
+      <p style="font-size:0.8rem;color:var(--red);margin-top:0.5rem">
+        <strong>Atenção:</strong> isso irá substituir os dados atuais do painel. Seus dados atuais serão perdidos caso não tenha feito um backup antes.
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeImport()">Cancelar</button>
+      <button class="btn-save" id="btnConfirmImport" onclick="confirmImport()">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Confirmar importação
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <svg id="toastIcon" viewBox="0 0 24 24" style="color:var(--green)"><polyline points="20 6 9 17 4 12"/></svg>
+  <span class="toast-msg" id="toastMsg">Salvo!</span>
+</div>
+
+<script>
+// ───── STATE ─────
+let errors         = JSON.parse(localStorage.getItem('cadErros_v2')   || '[]');
+let folders        = JSON.parse(localStorage.getItem('cadFolders_v2') || '[]');
+let customMaterias = JSON.parse(localStorage.getItem('cadMaterias_v2')|| '[]');
+let currentFolder  = 'all';
+let currentDiff    = '';
+let editingId      = null;
+let detailId       = null;
+
+// SVG icons for card subjects (inline, stroke-based)
+const SUBJECT_ICONS = {
+  'Português':            `<svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/></svg>`,
+  'Direito Constitucional':`<svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`,
+  'Direito Administrativo':`<svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`,
+  'Direito Penal':         `<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
+  'Direito Civil':         `<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`,
+  'Raciocínio Lógico':     `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>`,
+  'Matemática':            `<svg viewBox="0 0 24 24"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>`,
+  'Informática':           `<svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`,
+  'Direito Tributário':    `<svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`,
+  'Administração Pública': `<svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
+  'Contabilidade':         `<svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="15" x2="12" y2="15"/></svg>`,
+  'Economia':              `<svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`,
+  default:                 `<svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`
+};
+
+// ───── INIT ─────
+function enterApp(){
+  const ownerName = localStorage.getItem('cadOwnerName');
+  if(!ownerName){
+    // Primeira vez — mostra tela de nome
+    document.getElementById('splash').style.display='none';
+    document.getElementById('setupName').classList.add('visible');
+    setTimeout(()=>document.getElementById('setupNameInput').focus(), 300);
+  } else {
+    // Já tem nome — entra direto
+    document.getElementById('splash').style.display='none';
+    launchApp(ownerName);
+  }
+}
+
+function saveOwnerName(){
+  const input = document.getElementById('setupNameInput');
+  const name = input.value.trim();
+  if(!name){ input.focus(); input.style.borderColor='var(--red)'; return; }
+  localStorage.setItem('cadOwnerName', name);
+  document.getElementById('setupName').classList.remove('visible');
+  launchApp(name);
+}
+
+// Enter key support
+document.addEventListener('DOMContentLoaded', ()=>{
+  const inp = document.getElementById('setupNameInput');
+  if(inp) inp.addEventListener('keydown', e=>{ if(e.key==='Enter') saveOwnerName(); });
+});
+
+function launchApp(name){
+  document.getElementById('app').style.display='block';
+  document.getElementById('headerOwnerName').textContent = '✦ ' + name;
+  document.getElementById('pageOwnerName').textContent   = 'de ' + name;
+  renderFolders(); renderCards(); updateStats(); populateMaterias();
+  setTimeout(updateStorageMeter, 100);
+  setTimeout(renderMotivationalBar, 200);
+}
+
+// ───── MATÉRIAS ─────
+function populateMaterias(){
+  const sel=document.getElementById('fMateria');
+  sel.querySelectorAll('[data-custom]').forEach(o=>o.remove());
+  const outra=sel.querySelector('[value="__outra__"]');
+  customMaterias.forEach(m=>{
+    const opt=document.createElement('option');
+    opt.value=m; opt.textContent=m; opt.setAttribute('data-custom','1');
+    sel.insertBefore(opt,outra);
+  });
+}
+function handleMateriaChange(val){
+  document.getElementById('materiaCustomRow').style.display=val==='__outra__'?'flex':'none';
+  toggleLei(val);
+}
+function addCustomMateria(){
+  const input=document.getElementById('fMateriaCustom');
+  const name=input.value.trim();
+  if(!name){showToast('Digite o nome da matéria!','warn');return;}
+  if(!customMaterias.includes(name)){
+    customMaterias.push(name);
+    localStorage.setItem('cadMaterias_v2',JSON.stringify(customMaterias));
+    populateMaterias();
+  }
+  document.getElementById('fMateria').value=name;
+  input.value='';
+  document.getElementById('materiaCustomRow').style.display='none';
+  toggleLei(name);
+  showToast('Matéria "'+name+'" criada!','ok');
+}
+
+// ───── FOLDERS ─────
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function renderFolders(){
+  const list=document.getElementById('folderList');
+  const sel=document.getElementById('fFolder');
+  sel.innerHTML='<option value="_sem_caderno_">Automático (usar a matéria)</option>';
+  let html=`<div class="folder-item ${currentFolder==='all'?'active':''}" onclick="setFolder('all')">
+    <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+    <span style="flex:1">Todos os Erros</span>
+    <span class="folder-count">${errors.length}</span>
+  </div>`;
+  folders.forEach((f,i)=>{
+    const count=errors.filter(e=>e.folder===f).length;
+    html+=`<div class="folder-item ${currentFolder===f?'active':''}" onclick="setFolder(${JSON.stringify(f)})">
+      <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      <input class="folder-name-input" value="${esc(f)}" onblur="renameFolder(${i},this.value)" onclick="event.stopPropagation()" title="Renomear">
+      <span class="folder-count">${count}</span>
+      <button class="folder-del" title="Excluir" onclick="event.stopPropagation();deleteFolder(${i})">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>`;
+    sel.innerHTML+=`<option value="${esc(f)}">${esc(f)}</option>`;
+  });
+  list.innerHTML=html;
+}
+function addFolder(){
+  const name=prompt('Nome do novo caderno:','');
+  if(name&&name.trim()){folders.push(name.trim());saveData();renderFolders();showToast('Caderno criado!','ok');}
+}
+function renameFolder(i,newName){
+  if(!newName.trim()||newName===folders[i])return;
+  const old=folders[i]; folders[i]=newName.trim();
+  errors.forEach(e=>{if(e.folder===old)e.folder=newName.trim();});
+  saveData(); renderFolders();
+}
+function deleteFolder(i){
+  const name=folders[i], count=errors.filter(e=>e.folder===name).length;
+  if(!confirm(count>0?`Excluir "${name}"?\n${count} erro(s) ficarão sem caderno.`:`Excluir "${name}"?`))return;
+  if(currentFolder===name){currentFolder='all';document.getElementById('currentFolderTitle').textContent='Todos os Erros';}
+  errors.forEach(e=>{if(e.folder===name)e.folder='_sem_caderno_';});
+  folders.splice(i,1); saveData(); renderFolders(); renderCards();
+  showToast('Caderno excluído.','warn');
+}
+function setFolder(f){
+  currentFolder=f;
+  currentMateriaFilter=null;
+  document.getElementById('currentFolderTitle').textContent=f==='all'?'Todos os Erros':f;
+  renderFolders(); renderCards();
+}
+
+// ───── CARDS ─────
+function renderCards(){
+  renderMateriaFolders();
+}
+
+function cardHTML(e){
+  const icon=SUBJECT_ICONS[e.materia]||SUBJECT_ICONS.default;
+  const revSt=getRevStatus(e);
+  const nextRev=getNextRevLabel(e);
+  const tags=(e.keywords||'').split(',').filter(k=>k.trim()).slice(0,3);
+  const difLbl=e.dificuldade==='facil'?'Fácil':e.dificuldade==='medio'?'Médio':'Difícil';
+  const difDot=e.dificuldade==='facil'?'#27ae60':e.dificuldade==='medio'?'#e8c547':'#c0392b';
+  const overdueClass = revSt.overdue ? ' overdue' : '';
+  const nextRevHTML = nextRev ? `<span class="next-rev-chip ${nextRev.cls}"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${nextRev.text}</span>` : '';
+  return `<div class="error-card${overdueClass}" onclick="openDetail('${e.id}')">
+    <div class="card-stripe ${e.dificuldade}"></div>
+    <div class="card-body">
+      <div class="card-header">
+        <div class="card-icon">${icon}</div>
+        <div class="card-title-area">
+          <div class="card-materia">${esc(e.materia)}</div>
+          <div class="card-assunto">${esc(e.assunto)}</div>
+        </div>
+        <div class="card-banca">${esc(e.banca||'N/A')}</div>
+      </div>
+      ${e.onde?`<div class="card-onde"><strong>Onde Errei</strong>${esc(e.onde.substring(0,100))}${e.onde.length>100?'...':''}</div>`:''}
+      ${tags.length||e.lei?`<div class="card-tags">${tags.map(t=>`<span class="tag">${esc(t.trim())}</span>`).join('')}${e.lei?`<span class="tag lei">${esc(e.lei)}</span>`:''}</div>`:''}
+      <div class="card-footer">
+        <span class="diff-badge ${e.dificuldade}"><svg viewBox="0 0 8 8" style="width:8px;height:8px"><circle cx="4" cy="4" r="3.5" fill="${difDot}"/></svg>${difLbl}</span>
+        <span class="rev-status ${revSt.cls}">${revSt.svgIcon} ${revSt.label}</span>
+        ${nextRevHTML}
+        <span class="card-date">${formatDate(e.createdAt)}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ───── REVISÃO ESPAÇADA INTELIGENTE ─────
+// Difícil: 24h → 7d → 30d
+// Médio:   7d  → 30d
+// Fácil:   30d
+const REV_SCHEDULE = { dificil:[1,7,30], medio:[7,30], facil:[30] };
+
+function getNextRevDays(e){
+  const schedule = REV_SCHEDULE[e.dificuldade] || [7];
+  const stage = e.revStage || 0; // 0 = nunca revisou
+  return schedule[stage] || null; // null = ciclo completo
+}
+
+function getRevDueDate(e){
+  const days = getNextRevDays(e);
+  if(days === null) return null; // concluído
+  const base = e.lastRevision || e.createdAt;
+  return base + days * 86400000;
+}
+
+function isOverdue(e){
+  const due = getRevDueDate(e);
+  if(due === null) return false;
+  return Date.now() > due;
+}
+
+function getRevStatus(e){
+  const now=Date.now(), d=86400000;
+  const clockSvg=`<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
+  const checkSvg=`<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`;
+  const warnSvg =`<svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
+  const due = getRevDueDate(e);
+  if(due === null) return{cls:'ok',label:'Ciclo completo',svgIcon:checkSvg,overdue:false};
+  const days = getNextRevDays(e);
+  const timeLeft = due - now;
+  const overdue = timeLeft < 0;
+  if(overdue){
+    const daysLate = Math.ceil(-timeLeft/d);
+    return{cls:'pendente',label:`${daysLate}d atrasada`,svgIcon:warnSvg,overdue:true};
+  }
+  const hoursLeft = Math.ceil(timeLeft/3600000);
+  if(hoursLeft < 24) return{cls:'pendente',label:`${hoursLeft}h restantes`,svgIcon:clockSvg,overdue:false};
+  const daysLeft = Math.ceil(timeLeft/d);
+  return{cls:'pendente',label:`Rev. em ${daysLeft}d`,svgIcon:clockSvg,overdue:false};
+}
+
+function getNextRevLabel(e){
+  const days = getNextRevDays(e);
+  if(!days) return null;
+  if(days===1)  return{text:'Revisão em 24h',cls:'urgente'};
+  if(days===7)  return{text:'Revisão em 7 dias',cls:'semana'};
+  if(days===30) return{text:'Revisão em 30 dias',cls:'mes'};
+  return{text:`Revisão em ${days} dias`,cls:'semana'};
+}
+
+// ───── FILTER ─────
+function filterDiff(d,el){
+  currentDiff=d;
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active'); renderCards();
+}
+function filterRevision(type){showView('revision');renderRevisionView(type);}
+
+// ───── REVISION ─────
+function renderRevisionView(type){
+  const now=Date.now(),d=86400000;
+  let list;
+  if(type==='all'){
+    list=errors.filter(e=>getRevDueDate(e)!==null).sort((a,b)=>getRevDueDate(a)-getRevDueDate(b));
+  } else if(type==='24h'){
+    list=errors.filter(e=>isOverdue(e)&&getNextRevDays(e)===1);
+  } else if(type==='7d'){
+    list=errors.filter(e=>isOverdue(e)&&getNextRevDays(e)===7);
+  } else if(type==='30d'){
+    list=errors.filter(e=>isOverdue(e)&&getNextRevDays(e)===30);
+  } else {
+    list=errors.filter(e=>isOverdue(e));
+  }
+  const grid=document.getElementById('revisionGrid');
+  if(!list.length){
+    grid.innerHTML=`<div class="empty-state">
+      <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <h3>Tudo em dia!</h3><p>Nenhuma questão pendente neste período.</p>
+    </div>`;
+    return;
+  }
+  grid.innerHTML=list.map(e=>cardHTML(e)).join('');
+}
+
+// ───── FORM ─────
+function openForm(prefillId){
+  editingId=prefillId||null;
+  const titleEl=document.getElementById('formTitle');
+  titleEl.innerHTML=editingId
+    ?`<svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Editar Erro`
+    :`<svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Registrar Novo Erro`;
+  document.getElementById('materiaCustomRow').style.display='none';
+  populateMaterias();
+  if(editingId){
+    const e=errors.find(x=>x.id===editingId);
+    document.getElementById('fMateria').value =e.materia;
+    document.getElementById('fBanca').value   =e.banca;
+    document.getElementById('fAssunto').value =e.assunto;
+    document.getElementById('fOnde').value    =e.onde;
+    document.getElementById('fDiff').value    =e.dificuldade;
+    document.getElementById('fKeywords').value=e.keywords||'';
+    document.getElementById('fQuestao').value =e.questao||'';
+    document.getElementById('fObs').value     =e.obs||'';
+    document.getElementById('fLei').value     =e.lei||'';
+    document.getElementById('fArtigo').value  =e.artigo||'';
+    document.getElementById('fData').value    =e.dataQuestao||'';
+    document.querySelectorAll('.diff-opt').forEach(b=>b.classList.toggle('sel',b.classList.contains(e.dificuldade)));
+    toggleLei(e.materia);
+  } else {
+    ['fBanca','fAssunto','fOnde','fKeywords','fQuestao','fObs','fLei','fArtigo','fData'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('fMateria').value='';
+    document.getElementById('fDiff').value='dificil';
+    document.querySelectorAll('.diff-opt').forEach(b=>b.classList.remove('sel'));
+    document.querySelector('.diff-opt.dificil').classList.add('sel');
+    document.getElementById('leiSection').style.display='none';
+  }
+  renderFolders();
+  if(editingId){const ef=errors.find(x=>x.id===editingId).folder;const opt=document.querySelector(`#fFolder option[value="${esc(ef)}"]`);if(opt)opt.selected=true;}
+  document.getElementById('modalForm').classList.add('open');
+}
+function toggleLei(mat){document.getElementById('leiSection').style.display=(mat&&mat.toLowerCase().includes('direito'))?'block':'none';}
+function selDiff(d,el){document.querySelectorAll('.diff-opt').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');document.getElementById('fDiff').value=d;}
+function closeForm(){document.getElementById('modalForm').classList.remove('open');editingId=null;}
+function saveError(){
+  let materia=document.getElementById('fMateria').value;
+  if(materia==='__outra__'){showToast('Crie a matéria primeiro!','warn');return;}
+  const assunto=document.getElementById('fAssunto').value;
+  if(!materia||!assunto){showToast('Preencha Matéria e Assunto!','warn');return;}
+  const dif = document.getElementById('fDiff').value;
+
+  // ── AUTO-CRIA CADERNO DA MATÉRIA se não existir ──
+  const manualFolder = document.getElementById('fFolder').value;
+  let targetFolder = manualFolder||'_sem_caderno_';
+
+  if(!editingId){
+    // Se não escolheu caderno manualmente, usa a matéria como caderno
+    if(!manualFolder || manualFolder==='_sem_caderno_'){
+      targetFolder = materia;
+      if(!folders.includes(materia)){
+        folders.push(materia);
+        // ordena alfabeticamente
+        folders.sort((a,b)=>a.localeCompare(b,'pt'));
+      }
+    }
+  }
+
+  const entry={
+    id:          editingId||Date.now().toString(),
+    materia, banca:document.getElementById('fBanca').value, assunto,
+    onde:        document.getElementById('fOnde').value,
+    dificuldade: dif,
+    keywords:    document.getElementById('fKeywords').value,
+    questao:     document.getElementById('fQuestao').value,
+    obs:         document.getElementById('fObs').value,
+    lei:         document.getElementById('fLei').value,
+    artigo:      document.getElementById('fArtigo').value,
+    folder:      targetFolder,
+    dataQuestao: document.getElementById('fData').value,
+    createdAt:   editingId?errors.find(x=>x.id===editingId).createdAt:Date.now(),
+    lastRevision:editingId?errors.find(x=>x.id===editingId).lastRevision:null,
+    revStage:    editingId?errors.find(x=>x.id===editingId).revStage:0
+  };
+  errors=editingId?errors.map(x=>x.id===editingId?entry:x):[...errors,entry];
+  saveData();closeForm();renderCards();renderFolders();updateStats();
+
+  if(!editingId){
+    const msgs = {dificil:'Questão difícil → revise em 24h!',medio:'Questão média → revise em 7 dias!',facil:'Questão fácil → revise em 30 dias!'};
+    showToast(msgs[dif]||'Erro registrado!','rev');
+  } else {
+    showToast('Erro atualizado!','ok');
+  }
+}
+
+// ───── DETAIL ─────
+function openDetail(id){
+  detailId=id;
+  const e=errors.find(x=>x.id===id);
+  document.getElementById('detailTitle').textContent=e.materia+' — '+e.assunto;
+  const difLbl=e.dificuldade==='facil'?'Fácil':e.dificuldade==='medio'?'Médio':'Difícil';
+  const keywords=(e.keywords||'').split(',').filter(k=>k.trim());
+
+  // Lógica de revisão inteligente
+  const nextDays = getNextRevDays(e);
+  const revDue   = getRevDueDate(e);
+  const isOvd    = isOverdue(e);
+  const stage    = e.revStage||0;
+  const schedule = REV_SCHEDULE[e.dificuldade]||[7];
+
+  let revSuggestionHTML = '';
+  if(nextDays===null){
+    revSuggestionHTML=`<div class="rev-suggestion">
+      <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <div class="rev-suggestion-text">🏆 <strong>Ciclo completo!</strong> Você já dominou esta questão. Continue assim!</div>
+    </div>`;
+  } else if(isOvd){
+    const daysLate=Math.ceil((Date.now()-revDue)/86400000);
+    revSuggestionHTML=`<div class="rev-suggestion" style="background:rgba(192,57,43,0.07);border-color:rgba(192,57,43,0.25)">
+      <svg viewBox="0 0 24 24" style="stroke:var(--red)"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <div class="rev-suggestion-text"><strong style="color:var(--red)">Revisão atrasada ${daysLate} dia(s)!</strong><br>Esta questão deveria ter sido revisada. Faça agora!</div>
+    </div>`;
+  } else if(revDue){
+    const hoursLeft=Math.ceil((revDue-Date.now())/3600000);
+    const timeStr = hoursLeft<24 ? `${hoursLeft}h` : `${Math.ceil(hoursLeft/24)} dia(s)`;
+    revSuggestionHTML=`<div class="rev-suggestion">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <div class="rev-suggestion-text">Próxima revisão sugerida em <strong>${timeStr}</strong>. Etapa ${stage+1} de ${schedule.length} do ciclo ${e.dificuldade==='dificil'?'Difícil':e.dificuldade==='medio'?'Médio':'Fácil'}.</div>
+    </div>`;
+  }
+
+  // Botão de revisão correto para a etapa atual
+  let revBtnHTML = '';
+  if(nextDays!==null){
+    const btnLabel = nextDays===1?'Marcar revisão de 24h concluída':nextDays===7?'Marcar revisão de 7 dias concluída':'Marcar revisão de 30 dias concluída';
+    const btnCls   = nextDays===1?'r24':nextDays===7?'r7':'r30';
+    revBtnHTML=`<button class="rev-btn ${btnCls}" style="flex:2" onclick="markRevision('${e.id}')">
+      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>${btnLabel}
+    </button>`;
+  } else {
+    revBtnHTML=`<button class="rev-btn r24" style="flex:2;opacity:0.5;cursor:default">
+      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Ciclo concluído
+    </button>`;
+  }
+
+  document.getElementById('detailBody').innerHTML=`
+    ${revSuggestionHTML}
+    <div class="detail-grid">
+      <div class="detail-section"><div class="detail-label"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Matéria</div><div class="detail-value">${esc(e.materia)}</div></div>
+      <div class="detail-section"><div class="detail-label"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>Banca</div><div class="detail-value">${esc(e.banca||'—')}</div></div>
+      <div class="detail-section"><div class="detail-label"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Dificuldade</div><div class="detail-value">${difLbl}</div></div>
+      <div class="detail-section"><div class="detail-label"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Caderno</div><div class="detail-value">${e.folder==='_sem_caderno_'?'—':esc(e.folder)}</div></div>
+      ${e.lei?`<div class="detail-section"><div class="detail-label"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Lei</div><div class="detail-value">${esc(e.lei)}</div></div>`:''}
+      ${e.artigo?`<div class="detail-section"><div class="detail-label"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="16" y2="18"/></svg>Artigo</div><div class="detail-value">${esc(e.artigo)}</div></div>`:''}
+    </div>
+    ${e.onde?`<div class="detail-section"><div class="detail-label"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Onde Errei</div><div class="detail-value">${esc(e.onde)}</div></div>`:''}
+    ${e.questao?`<div class="detail-section"><div class="detail-label"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Questão / Enunciado</div><div class="detail-value" style="font-size:.82rem;font-style:italic;color:var(--text2)">${esc(e.questao)}</div></div>`:''}
+    ${e.obs?`<div class="detail-section"><div class="detail-label"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>Observações / Gabarito</div><div class="detail-value">${esc(e.obs)}</div></div>`:''}
+    ${keywords.length?`<div class="detail-section"><div class="detail-label"><svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Palavras-chave</div><div class="keywords">${keywords.map(k=>`<span class="keyword">${esc(k.trim())}</span>`).join('')}</div></div>`:''}
+    <div class="detail-section">
+      <div class="detail-label"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Revisão</div>
+      <div class="rev-actions">${revBtnHTML}</div>
+    </div>`;
+  document.getElementById('modalDetail').classList.add('open');
+}
+function closeDetail(){document.getElementById('modalDetail').classList.remove('open');}
+function markRevision(id, stage){
+  errors=errors.map(e=>{
+    if(e.id!==id)return e;
+    const newStage = stage !== undefined ? stage : (e.revStage||0)+1;
+    const schedule = REV_SCHEDULE[e.dificuldade]||[7];
+    const done = newStage >= schedule.length;
+    return{...e, lastRevision:Date.now(), revStage:newStage};
+  });
+  saveData();updateStats();closeDetail();
+  const e = errors.find(x=>x.id===id);
+  const nextDays = getNextRevDays(e);
+  if(!nextDays){
+    showToast('Ciclo completo! Questão dominada! 🏆','ok');
+  } else {
+    const nextLabel = nextDays===1?'24 horas':nextDays===7?'7 dias':'30 dias';
+    showToast(`Revisado! Próxima revisão em ${nextLabel}`, 'ok');
+  }
+  renderCards();
+}
+function deleteError(){
+  if(!confirm('Excluir este registro?'))return;
+  errors=errors.filter(e=>e.id!==detailId);
+  saveData();closeDetail();renderCards();renderFolders();updateStats();showToast('Excluído.','warn');
+}
+function editError(){closeDetail();openForm(detailId);}
+
+// ───── STATS ─────
+function updateStats(){
+  const now=Date.now();
+  document.getElementById('statTotal').textContent=errors.length;
+  document.getElementById('statDif').textContent=errors.filter(e=>e.dificuldade==='dificil').length;
+
+  const overdue = errors.filter(e=>isOverdue(e));
+  const pend    = errors.filter(e=>getRevDueDate(e)!==null).length;
+  document.getElementById('statPend').textContent=overdue.length;
+  document.getElementById('revPending').textContent=overdue.length;
+
+  const rev=errors.filter(e=>(e.revStage||0)>0).length;
+  document.getElementById('statRev').textContent=rev;
+
+  // Alerta de revisões atrasadas
+  const banner=document.getElementById('alertBanner');
+  if(overdue.length>0){
+    banner.classList.add('visible');
+    document.getElementById('alertTitle').textContent=
+      overdue.length===1?'Você tem 1 revisão atrasada!':`Você tem ${overdue.length} revisões atrasadas!`;
+    document.getElementById('alertDesc').textContent=
+      'Revise agora para não perder o efeito da memorização espaçada.';
+  } else {
+    banner.classList.remove('visible');
+  }
+}
+
+// ───── VIEW ─────
+function showView(v){
+  const views=['home','revision','flashcards','notes','timer'];
+  views.forEach(vv=>{
+    const el=document.getElementById('view'+vv.charAt(0).toUpperCase()+vv.slice(1));
+    if(el) el.style.display=vv===v?'block':'none';
+  });
+  ['btnHome','btnRevision','btnFlash','btnNotes','btnTimer'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.classList.remove('active');
+  });
+  const btnMap={home:'btnHome',revision:'btnRevision',flashcards:'btnFlash',notes:'btnNotes',timer:'btnTimer'};
+  if(btnMap[v]) document.getElementById(btnMap[v])?.classList.add('active');
+  if(v==='revision') renderRevisionView('all');
+  if(v==='flashcards'){ populateFlashFolderFilter(); initFlashcards(); }
+  if(v==='notes') renderNotes();
+  if(v==='timer'){ renderTimerHistory(); drawChart(); if(timerSessions.length) document.getElementById('shareBtn').style.display='flex'; }
+}
+function toggleView(v){
+  document.querySelector('main').classList.toggle('list-view',v==='list');
+  document.getElementById('viewGrid').classList.toggle('active',v==='grid');
+  document.getElementById('viewList').classList.toggle('active',v==='list');
+}
+
+// ───── HELPERS ─────
+function saveData(){
+  localStorage.setItem('cadErros_v2',    JSON.stringify(errors));
+  localStorage.setItem('cadFolders_v2',  JSON.stringify(folders));
+  localStorage.setItem('cadMaterias_v2', JSON.stringify(customMaterias));
+  updateStorageMeter();
+}function formatDate(ts){
+  if(!ts)return'';
+  return new Date(ts).toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});
+}
+
+const TOAST_ICONS={
+  ok:  `<svg viewBox="0 0 24 24" style="color:var(--green)"><polyline points="20 6 9 17 4 12"/></svg>`,
+  warn:`<svg viewBox="0 0 24 24" style="color:var(--yellow)"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+  rev: `<svg viewBox="0 0 24 24" style="color:var(--accent)"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`
+};
+function showToast(msg,type){
+  const t=document.getElementById('toast');
+  document.getElementById('toastIcon').innerHTML=TOAST_ICONS[type]||TOAST_ICONS.ok;
+  document.getElementById('toastMsg').textContent=msg;
+  t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2600);
+}
+// ───── STORAGE METER ─────
+function updateStorageMeter(){
+  try{
+    // Measure all caderno keys
+    const keys = ['cadErros_v2','cadFolders_v2','cadMaterias_v2'];
+    let usedBytes = 0;
+    keys.forEach(k=>{
+      const val = localStorage.getItem(k);
+      if(val) usedBytes += (new TextEncoder().encode(val)).length;
+    });
+
+    const LIMIT  = 5 * 1024 * 1024; // 5 MB conservative
+    const pct    = Math.min(100, Math.round((usedBytes / LIMIT) * 100));
+    const usedKB = (usedBytes / 1024).toFixed(1);
+    const usedMB = (usedBytes / (1024*1024)).toFixed(2);
+    const display = usedBytes > 1024*100 ? `${usedMB} MB` : `${usedKB} KB`;
+
+    // Estimate records remaining
+    const avgPerRecord = usedBytes > 0 && errors.length > 0
+      ? usedBytes / errors.length
+      : 1200; // ~1.2 KB default
+    const remaining = Math.max(0, Math.floor((LIMIT - usedBytes) / avgPerRecord));
+
+    // Update UI
+    const bar    = document.getElementById('storageBarFill');
+    const pctEl  = document.getElementById('storagePct');
+    const detail = document.getElementById('storageDetail');
+
+    if(!bar) return;
+
+    pctEl.textContent = `${pct}%`;
+    bar.style.width   = `${pct}%`;
+
+    // Color thresholds
+    bar.classList.remove('warn','danger');
+    if(pct >= 90)       { bar.classList.add('danger'); pctEl.style.color='var(--red)'; }
+    else if(pct >= 70)  { bar.classList.add('warn');   pctEl.style.color='var(--accent2)'; }
+    else                { pctEl.style.color='var(--accent)'; }
+
+    // Detail text
+    if(errors.length === 0){
+      detail.innerHTML = `Vazio · capacidade para ~4.000 registros`;
+    } else {
+      detail.innerHTML = `${display} usado de ~5 MB · <strong style="color:var(--text)">~${remaining.toLocaleString('pt-BR')} registros restantes</strong>`;
+    }
+
+    // Alert below 80% threshold
+    let alertEl = document.getElementById('storageAlertMsg');
+    if(!alertEl){
+      alertEl = document.createElement('div');
+      alertEl.id = 'storageAlertMsg';
+      alertEl.className = 'storage-alert';
+      document.querySelector('.storage-meter-wrap').appendChild(alertEl);
+    }
+    alertEl.className = 'storage-alert';
+    if(pct >= 90){
+      alertEl.className = 'storage-alert danger';
+      alertEl.textContent = '⚠️ Armazenamento quase cheio! Faça um backup agora.';
+    } else if(pct >= 70){
+      alertEl.className = 'storage-alert warn';
+      alertEl.textContent = 'Armazenamento acima de 70%. Considere fazer um backup.';
+    }
+  } catch(err){
+    console.warn('Storage meter error:', err);
+  }
+}
+function exportData(){
+  if(!errors.length && !folders.length){
+    showToast('Nenhum dado para exportar ainda.','warn');
+    return;
+  }
+  const payload = {
+    version: '2.0',
+    exportedAt: new Date().toISOString(),
+    exportedAtBR: new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}),
+    errors,
+    folders,
+    customMaterias
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const date = new Date().toLocaleDateString('pt-BR').replace(/\//g,'-');
+  a.href     = url;
+  a.download = `caderno-de-erros-backup-${date}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast(`Backup exportado! ${errors.length} registro(s) salvos.`,'ok');
+}
+
+let pendingImport = null;
+
+function importData(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  event.target.value = ''; // reset so same file can be re-selected
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const data = JSON.parse(e.target.result);
+      // Validate structure
+      if(!data.errors || !Array.isArray(data.errors)){
+        showToast('Arquivo inválido. Use um backup gerado por este painel.','warn');
+        return;
+      }
+      pendingImport = data;
+      // Show preview modal
+      document.getElementById('importPreview').innerHTML = `
+        <div class="import-preview-row">
+          <span>Registros de erros</span>
+          <span>${data.errors.length}</span>
+        </div>
+        <div class="import-preview-row">
+          <span>Cadernos</span>
+          <span>${(data.folders||[]).length}</span>
+        </div>
+        <div class="import-preview-row">
+          <span>Matérias personalizadas</span>
+          <span>${(data.customMaterias||[]).length}</span>
+        </div>
+        <div class="import-preview-row">
+          <span>Data do backup</span>
+          <span>${data.exportedAtBR || '—'}</span>
+        </div>
+        <div class="import-preview-row">
+          <span>Versão</span>
+          <span>${data.version || '1.0'}</span>
+        </div>
+      `;
+      document.getElementById('modalImport').classList.add('open');
+    } catch(err){
+      showToast('Erro ao ler o arquivo. Verifique se é um backup válido.','warn');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function confirmImport(){
+  if(!pendingImport) return;
+  errors         = pendingImport.errors         || [];
+  folders        = pendingImport.folders        || [];
+  customMaterias = pendingImport.customMaterias || [];
+  saveData();
+  closeImport();
+  renderFolders();
+  renderCards();
+  updateStats();
+  populateMaterias();
+  showToast(`Importado! ${errors.length} registro(s) restaurados.`,'ok');
+  pendingImport = null;
+}
+
+function closeImport(){
+  document.getElementById('modalImport').classList.remove('open');
+  pendingImport = null;
+}
+
+// ───── MOBILE ─────
+function mobileNav(v){
+  showView(v);
+  document.getElementById('mBarHome').classList.toggle('active', v==='home');
+  document.getElementById('mBarRevision').classList.toggle('active', v==='revision');
+  document.getElementById('mBarFolders').classList.remove('active');
+  // sync desktop nav
+  document.getElementById('btnHome').classList.toggle('active', v==='home');
+  document.getElementById('btnRevision').classList.toggle('active', v==='revision');
+}
+
+function openMobileDrawer(){
+  renderMobileFolders();
+  document.getElementById('mobileDrawer').classList.add('open');
+  document.getElementById('mobileDrawerOverlay').classList.add('open');
+  document.getElementById('mBarFolders').classList.add('active');
+}
+
+function closeMobileDrawer(){
+  document.getElementById('mobileDrawer').classList.remove('open');
+  document.getElementById('mobileDrawerOverlay').classList.remove('open');
+  document.getElementById('mBarFolders').classList.remove('active');
+}
+
+function renderMobileFolders(){
+  const list = document.getElementById('mobileFolderList');
+  let html = `<div class="mobile-folder-item ${currentFolder==='all'?'active':''}" onclick="mobileFolderSelect('all')">
+    <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+    <span class="mobile-folder-name">Todos os Erros</span>
+    <span class="mobile-folder-count">${errors.length}</span>
+  </div>`;
+  folders.forEach((f,i)=>{
+    const count = errors.filter(e=>e.folder===f).length;
+    html += `<div class="mobile-folder-item ${currentFolder===f?'active':''}" onclick="mobileFolderSelect(${JSON.stringify(f)})">
+      <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      <input class="mobile-folder-input" value="${esc(f)}"
+        onblur="renameFolder(${i},this.value);renderMobileFolders()"
+        onclick="event.stopPropagation()">
+      <span class="mobile-folder-count">${count}</span>
+      <button class="mobile-folder-del" onclick="event.stopPropagation();deleteFolder(${i});renderMobileFolders()">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>`;
+  });
+  list.innerHTML = html;
+}
+
+function mobileFolderSelect(f){
+  setFolder(f);
+  closeMobileDrawer();
+}
+
+// ───── MOBILE ─────
+function mobileNav(v){
+  showView(v);
+  ['mBarHome','mBarFolders','mBarFlash','mBarTimer'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.classList.remove('active');
+  });
+  const map={home:'mBarHome',flashcards:'mBarFlash',timer:'mBarTimer'};
+  if(map[v]) document.getElementById(map[v])?.classList.add('active');
+}
+function openMobileDrawer(){
+  renderMobileFolders();
+  document.getElementById('mobileDrawer').classList.add('open');
+  document.getElementById('mobileDrawerOverlay').classList.add('open');
+  document.getElementById('mBarFolders').classList.add('active');
+}
+function closeMobileDrawer(){
+  document.getElementById('mobileDrawer').classList.remove('open');
+  document.getElementById('mobileDrawerOverlay').classList.remove('open');
+  document.getElementById('mBarFolders').classList.remove('active');
+}
+function renderMobileFolders(){
+  const list = document.getElementById('mobileFolderList');
+  let html = `<div class="mobile-folder-item ${currentFolder==='all'?'active':''}" onclick="mobileFolderSelect('all')">
+    <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+    <span class="mobile-folder-name">Todos os Erros</span>
+    <span class="mobile-folder-count">${errors.length}</span>
+  </div>`;
+  folders.forEach((f,i)=>{
+    const count = errors.filter(e=>e.folder===f).length;
+    html+=`<div class="mobile-folder-item ${currentFolder===f?'active':''}" onclick="mobileFolderSelect(${JSON.stringify(f)})">
+      <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      <input class="mobile-folder-input" value="${esc(f)}"
+        onblur="renameFolder(${i},this.value);renderMobileFolders()"
+        onclick="event.stopPropagation()">
+      <span class="mobile-folder-count">${count}</span>
+      <button class="mobile-folder-del" onclick="event.stopPropagation();deleteFolder(${i});renderMobileFolders()">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>`;
+  });
+  list.innerHTML = html;
+}
+function mobileFolderSelect(f){ setFolder(f); closeMobileDrawer(); }
+function addFolderMobile(){
+  const name = prompt('Nome do novo caderno:','');
+  if(name&&name.trim()){folders.push(name.trim());saveData();renderFolders();renderMobileFolders();showToast('Caderno criado!','ok');}
+}
+
+// ───── PASTAS POR MATÉRIA ─────
+let currentMateriaFilter = null; // null = showing folders, string = inside a materia
+
+// Cor e ícone por matéria
+const MATERIA_META = {
+  'Português':             {color:'#5b8fa8', rgb:'91,143,168', icon:'<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/>'},
+  'Direito Constitucional':{color:'#e8c547', rgb:'232,197,71', icon:'<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>'},
+  'Direito Administrativo':{color:'#d4773a', rgb:'212,119,58', icon:'<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>'},
+  'Direito Penal':          {color:'#c0392b', rgb:'192,57,43',  icon:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>'},
+  'Direito Civil':          {color:'#8e44ad', rgb:'142,68,173', icon:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>'},
+  'Direito Tributário':     {color:'#f39c12', rgb:'243,156,18', icon:'<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'},
+  'Direito do Trabalho':    {color:'#16a085', rgb:'22,160,133', icon:'<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>'},
+  'Raciocínio Lógico':      {color:'#2980b9', rgb:'41,128,185', icon:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3"/>'},
+  'Matemática':             {color:'#27ae60', rgb:'39,174,96',  icon:'<line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>'},
+  'Informática':            {color:'#1abc9c', rgb:'26,188,156', icon:'<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>'},
+  'Administração Pública':  {color:'#e67e22', rgb:'230,126,34', icon:'<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>'},
+  'Direito Previdenciário': {color:'#3498db', rgb:'52,152,219', icon:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>'},
+  'Direito Proc. Civil':    {color:'#9b59b6', rgb:'155,89,182', icon:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>'},
+  'Direito Proc. Penal':    {color:'#e74c3c', rgb:'231,76,60',  icon:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>'},
+  'Contabilidade':          {color:'#2ecc71', rgb:'46,204,113', icon:'<rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/>'},
+  'Economia':               {color:'#f1c40f', rgb:'241,196,15', icon:'<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>'},
+  default:                  {color:'#e8c547', rgb:'232,197,71', icon:'<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>'},
+};
+
+function getMeta(materia){
+  return MATERIA_META[materia] || {...MATERIA_META.default};
+}
+
+function renderMateriaFolders(){
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const grid = document.getElementById('materiaFoldersGrid');
+  const cardsGrid = document.getElementById('cardsGrid');
+  const breadcrumb = document.getElementById('materiaBreadcrumb');
+
+  // Filter base pool
+  let pool = errors.filter(e => {
+    const mF = currentFolder==='all' || e.folder===currentFolder;
+    const mD = !currentDiff || e.dificuldade===currentDiff;
+    return mF && mD;
+  });
+
+  if(currentMateriaFilter !== null){
+    // ── INSIDE A MATERIA: show individual cards ──
+    grid.style.display='none';
+    cardsGrid.style.display='';
+    breadcrumb.style.display='flex';
+    document.getElementById('breadcrumbMateria').textContent = currentMateriaFilter;
+
+    let list = pool.filter(e => e.materia===currentMateriaFilter);
+    if(q) list = list.filter(e =>
+      e.assunto.toLowerCase().includes(q) ||
+      (e.banca||'').toLowerCase().includes(q) ||
+      (e.keywords||'').toLowerCase().includes(q)
+    );
+
+    if(!list.length){
+      cardsGrid.innerHTML=`<div class="empty-state">
+        <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        <h3>Nenhum erro aqui</h3><p>Clique em "+ Novo Erro" para registrar.</p>
+      </div>`;
+    } else {
+      cardsGrid.innerHTML = list.slice().reverse().map(e=>cardHTML(e)).join('');
+    }
+    return;
+  }
+
+  // ── FOLDER VIEW: show materia folders ──
+  cardsGrid.style.display='none';
+  breadcrumb.style.display='none';
+  grid.style.display='';
+
+  if(q){
+    // Search mode: show all cards flat
+    grid.style.display='none';
+    cardsGrid.style.display='';
+    breadcrumb.style.display='none';
+    let list = pool.filter(e =>
+      e.assunto.toLowerCase().includes(q) ||
+      (e.materia||'').toLowerCase().includes(q) ||
+      (e.banca||'').toLowerCase().includes(q) ||
+      (e.keywords||'').toLowerCase().includes(q)
+    );
+    if(!list.length){
+      cardsGrid.innerHTML=`<div class="empty-state">
+        <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        <h3>Nenhum resultado</h3><p>Tente outro termo de busca.</p>
+      </div>`;
+    } else {
+      cardsGrid.innerHTML = list.slice().reverse().map(e=>cardHTML(e)).join('');
+    }
+    return;
+  }
+
+  if(!pool.length){
+    grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1">
+      <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      <h3>Nenhum erro registrado ainda</h3>
+      <p>Clique em "+ Novo Erro" para começar.</p>
+    </div>`;
+    return;
+  }
+
+  // Group by materia
+  const groups = {};
+  pool.forEach(e=>{
+    const m = e.materia||'Sem matéria';
+    if(!groups[m]) groups[m]={errors:[],overdue:0,dif:0,med:0,fac:0};
+    groups[m].errors.push(e);
+    if(isOverdue(e)) groups[m].overdue++;
+    if(e.dificuldade==='dificil') groups[m].dif++;
+    else if(e.dificuldade==='medio') groups[m].med++;
+    else groups[m].fac++;
+  });
+
+  const sorted = Object.keys(groups).sort((a,b)=>a.localeCompare(b,'pt'));
+
+  grid.innerHTML = sorted.map(materia=>{
+    const g = groups[materia];
+    const meta = getMeta(materia);
+    const alertHTML = g.overdue > 0
+      ? `<div class="mf-alert"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${g.overdue} revisão${g.overdue>1?'ões':''} pendente${g.overdue>1?'s':''}</div>`
+      : `<div class="mf-ok"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Em dia</div>`;
+    const badges = [
+      g.dif?`<span class="mf-badge dif">🔴 ${g.dif}</span>`:'',
+      g.med?`<span class="mf-badge med">🟡 ${g.med}</span>`:'',
+      g.fac?`<span class="mf-badge fac">🟢 ${g.fac}</span>`:'',
+    ].join('');
+    return `<div class="materia-folder-card" style="--fc:${meta.color}" onclick="openMateriaFolder('${esc(materia)}')">
+      <div class="mf-icon"><svg viewBox="0 0 24 24">${meta.icon}</svg></div>
+      <div class="mf-name">${esc(materia)}</div>
+      <div class="mf-count">${g.errors.length} erro${g.errors.length!==1?'s':''}</div>
+      <div class="mf-badges">${badges}</div>
+      ${alertHTML}
+    </div>`;
+  }).join('');
+}
+
+function openMateriaFolder(materia){
+  currentMateriaFilter = materia;
+  renderMateriaFolders();
+}
+
+function backToFolders(){
+  currentMateriaFilter = null;
+  renderMateriaFolders();
+}
+let flashQueue=[], flashIndex=0, flashCorrect=0, flashWrong=0;
+let flashResults=JSON.parse(localStorage.getItem('cadFlashResults')||'[]');
+
+function populateFlashFolderFilter(){
+  const sel=document.getElementById('flashFolderFilter');
+  if(!sel)return;
+  const current=sel.value||'all';
+  sel.innerHTML='<option value="all">Todos os Cadernos</option>';
+  folders.forEach(f=>{
+    const opt=document.createElement('option');
+    opt.value=f; opt.textContent=f;
+    if(f===current) opt.selected=true;
+    sel.appendChild(opt);
+  });
+}
+
+function initFlashcards(){
+  populateFlashFolderFilter();
+  const folderFilter=document.getElementById('flashFolderFilter')?.value||'all';
+  let pool=errors.filter(e=>e.obs&&e.obs.trim()&&e.questao&&e.questao.trim());
+  if(folderFilter!=='all') pool=pool.filter(e=>e.folder===folderFilter);
+  flashQueue=pool.sort(()=>Math.random()-0.5);
+  flashIndex=0; flashCorrect=0; flashWrong=0;
+  updateFlashStats();
+  const empty=document.getElementById('flashEmpty');
+  const wrap=document.getElementById('flashCardWrap');
+  if(!flashQueue.length){
+    empty.innerHTML=`<svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M12 8v8M8 12h8"/></svg>
+      <h3>Nenhum flashcard disponível</h3>
+      <p>Registre erros com <strong>Enunciado</strong> e <strong>Gabarito comentado</strong> preenchidos${folderFilter!=='all'?' neste caderno':''}.</p>`;
+    empty.style.display='block'; wrap.style.display='none';
+  } else {
+    empty.style.display='none'; wrap.style.display='block';
+    showFlashCard();
+  }
+}
+
+function showFlashCard(){
+  if(flashIndex>=flashQueue.length){
+    document.getElementById('flashCardWrap').style.display='none';
+    document.getElementById('flashEmpty').innerHTML=`
+      <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <h3>Sessão concluída! 🎉</h3>
+      <p>✓ ${flashCorrect} acertos &nbsp;·&nbsp; ✗ ${flashWrong} erros de ${flashQueue.length} cartões</p>`;
+    document.getElementById('flashEmpty').style.display='block';
+    saveFlashResult(); drawChart();
+    return;
+  }
+  const e=flashQueue[flashIndex];
+  document.getElementById('flashQuestion').textContent=e.questao;
+  document.getElementById('flashAnswer').textContent=e.obs;
+  document.getElementById('flashCard').classList.remove('flipped');
+  document.getElementById('flashActions').style.display='none';
+  document.getElementById('flashProgress').textContent=`${flashIndex+1} / ${flashQueue.length}`;
+  // Meta badges
+  const meta=document.getElementById('flashCardMeta');
+  const folderLabel=e.folder&&e.folder!=='_sem_caderno_'?`<span class="flash-card-badge caderno">📁 ${esc(e.folder)}</span>`:'';
+  meta.innerHTML=`<span class="flash-card-badge materia">${esc(e.materia)}</span>${folderLabel}`;
+  updateFlashStats();
+}
+
+function flipCard(){
+  const card=document.getElementById('flashCard');
+  if(!card.classList.contains('flipped')){
+    card.classList.add('flipped');
+    setTimeout(()=>document.getElementById('flashActions').style.display='flex',350);
+  }
+}
+
+function unflipCard(){
+  const card=document.getElementById('flashCard');
+  card.classList.remove('flipped');
+  document.getElementById('flashActions').style.display='none';
+}
+
+function flashVote(type){
+  if(type==='correct') flashCorrect++;
+  else flashWrong++;
+  flashIndex++;
+  updateFlashStats();
+  showFlashCard();
+}
+
+function updateFlashStats(){
+  document.getElementById('flashCorrect').textContent=flashCorrect;
+  document.getElementById('flashWrong').textContent=flashWrong;
+  document.getElementById('flashRemain').textContent=Math.max(0,flashQueue.length-flashIndex);
+}
+
+function saveFlashResult(){
+  if(!flashQueue.length)return;
+  flashResults.push({date:new Date().toLocaleDateString('pt-BR'),ts:Date.now(),correct:flashCorrect,wrong:flashWrong,total:flashQueue.length});
+  if(flashResults.length>30)flashResults=flashResults.slice(-30);
+  localStorage.setItem('cadFlashResults',JSON.stringify(flashResults));
+}
+
+// ───── NOTAS ─────
+let notes=JSON.parse(localStorage.getItem('cadNotes')||'[]');
+let noteFilterCurrent='';
+
+function renderNotes(){
+  const grid=document.getElementById('notesGrid');
+  let list=noteFilterCurrent?notes.filter(n=>n.tag===noteFilterCurrent):notes;
+  if(!list.length){
+    grid.innerHTML=`<div class="flash-empty" style="grid-column:1/-1">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <h3>Nenhuma nota ainda</h3><p>Clique em "Nova Nota" para criar.</p>
+    </div>`;
+    return;
+  }
+  const tagLabels={importante:'🔴 Importante',revisar:'🟡 Revisar',priorizar:'🟢 Priorizar','nao-esquecer':'🔵 Não Esquecer'};
+  grid.innerHTML=list.slice().reverse().map(n=>`
+    <div class="note-card">
+      <div class="note-card-top">
+        <span class="note-tag ${n.tag}">${tagLabels[n.tag]||n.tag}</span>
+        <button class="note-del" onclick="deleteNote('${n.id}')">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      ${n.title?`<div class="note-title">${esc(n.title)}</div>`:''}
+      <div class="note-body">${esc(n.body)}</div>
+      <div class="note-date">${new Date(n.createdAt).toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'})}</div>
+    </div>
+  `).join('');
+}
+function filterNotes(tag,el){
+  noteFilterCurrent=tag;
+  document.querySelectorAll('.note-filter').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderNotes();
+}
+function openNoteForm(){
+  document.getElementById('noteTitle').value='';
+  document.getElementById('noteBody').value='';
+  document.getElementById('noteTag').value='importante';
+  document.querySelectorAll('.note-tag-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector('.note-tag-btn.importante').classList.add('active');
+  document.getElementById('modalNote').classList.add('open');
+}
+function closeNoteForm(){document.getElementById('modalNote').classList.remove('open');}
+function selectNoteTag(tag,el){
+  document.querySelectorAll('.note-tag-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('noteTag').value=tag;
+}
+function saveNote(){
+  const body=document.getElementById('noteBody').value.trim();
+  if(!body){showToast('Escreva algo na nota!','warn');return;}
+  notes.push({
+    id:Date.now().toString(),
+    title:document.getElementById('noteTitle').value.trim(),
+    body,
+    tag:document.getElementById('noteTag').value,
+    createdAt:Date.now()
+  });
+  localStorage.setItem('cadNotes',JSON.stringify(notes));
+  closeNoteForm();
+  renderNotes();
+  showToast('Nota salva!','ok');
+}
+function deleteNote(id){
+  if(!confirm('Excluir esta nota?'))return;
+  notes=notes.filter(n=>n.id!==id);
+  localStorage.setItem('cadNotes',JSON.stringify(notes));
+  renderNotes();
+  showToast('Nota excluída.','warn');
+}
+
+// ───── CRONÔMETRO ─────
+let timerInterval=null, timerSeconds=0, timerRunning=false;
+let timerSessions=JSON.parse(localStorage.getItem('cadTimerSessions')||'[]');
+
+function timerFormat(s){
+  const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;
+  return [h,m,sec].map(v=>String(v).padStart(2,'0')).join(':');
+}
+function timerStart(){
+  timerRunning=true;
+  document.getElementById('timerStartBtn').style.display='none';
+  document.getElementById('timerPauseBtn').style.display='flex';
+  document.getElementById('timerStopBtn').style.display='flex';
+  document.getElementById('timerLabel').textContent='Sessão em andamento...';
+  timerInterval=setInterval(()=>{
+    timerSeconds++;
+    document.getElementById('timerDisplay').textContent=timerFormat(timerSeconds);
+  },1000);
+}
+function timerPause(){
+  if(timerRunning){
+    clearInterval(timerInterval); timerRunning=false;
+    document.getElementById('timerPauseBtn').innerHTML=`<svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg> Retomar`;
+    document.getElementById('timerLabel').textContent='Pausado';
+  } else {
+    timerStart();
+    document.getElementById('timerPauseBtn').innerHTML=`<svg viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pausar`;
+  }
+}
+function timerStop(){
+  clearInterval(timerInterval); timerRunning=false;
+  if(timerSeconds<5){showToast('Sessão muito curta!','warn');timerReset();return;}
+  const session={
+    id:Date.now().toString(),
+    seconds:timerSeconds,
+    duration:timerFormat(timerSeconds),
+    date:new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'}),
+    time:new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),
+    ts:Date.now()
+  };
+  timerSessions.unshift(session);
+  if(timerSessions.length>50)timerSessions=timerSessions.slice(0,50);
+  localStorage.setItem('cadTimerSessions',JSON.stringify(timerSessions));
+  timerReset();
+  renderTimerHistory();
+  drawChart();
+  document.getElementById('shareBtn').style.display='flex';
+  showToast(`Sessão salva: ${session.duration}!`,'ok');
+}
+function timerReset(){
+  timerSeconds=0;
+  document.getElementById('timerDisplay').textContent='00:00:00';
+  document.getElementById('timerLabel').textContent='Pronto para começar';
+  document.getElementById('timerStartBtn').style.display='flex';
+  document.getElementById('timerPauseBtn').style.display='none';
+  document.getElementById('timerStopBtn').style.display='none';
+  document.getElementById('timerPauseBtn').innerHTML=`<svg viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pausar`;
+}
+function renderTimerHistory(){
+  const el=document.getElementById('timerHistory');
+  if(!timerSessions.length){
+    el.innerHTML=`<p style="font-size:0.83rem;color:var(--text3);text-align:center;padding:1rem">Nenhuma sessão registrada ainda.</p>`;
+    return;
+  }
+  el.innerHTML=timerSessions.slice(0,15).map(s=>`
+    <div class="timer-session-item" id="sess-${s.id}">
+      <div class="session-icon">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <div class="session-info">
+        <div class="session-duration">${s.duration}</div>
+        <div class="session-meta">${s.date} às ${s.time}</div>
+      </div>
+      <button class="session-del" title="Excluir sessão" onclick="deleteTimerSession('${s.id}')">
+        <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+      </button>
+    </div>
+  `).join('');
+}
+
+function deleteTimerSession(id){
+  if(!confirm('Excluir esta sessão?'))return;
+  timerSessions=timerSessions.filter(s=>s.id!==id);
+  localStorage.setItem('cadTimerSessions',JSON.stringify(timerSessions));
+  renderTimerHistory();
+  drawChart();
+  if(!timerSessions.length) document.getElementById('shareBtn').style.display='none';
+  showToast('Sessão excluída.','warn');
+}
+
+// ───── GRÁFICO ─────
+function drawChart(){
+  const canvas=document.getElementById('progressChart');
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  const W=canvas.parentElement.offsetWidth||400;
+  const H=160;
+  canvas.width=W*dpr; canvas.height=H*dpr;
+  canvas.style.width=W+'px'; canvas.style.height=H+'px';
+  ctx.scale(dpr,dpr);
+
+  const data=flashResults.slice(-10);
+  if(!data.length){
+    ctx.fillStyle='#6b6760';
+    ctx.font='14px DM Sans, sans-serif';
+    ctx.textAlign='center';
+    ctx.fillText('Faça uma sessão de flashcards para ver o gráfico',W/2,H/2);
+    return;
+  }
+
+  const maxVal=Math.max(...data.map(d=>d.total),1);
+  const padL=10,padR=10,padT=20,padB=30;
+  const cW=W-padL-padR, cH=H-padT-padB;
+  const barW=Math.min(40,(cW/data.length)-8);
+
+  // Grid lines
+  ctx.strokeStyle='#2e2c28'; ctx.lineWidth=0.5;
+  for(let i=0;i<=4;i++){
+    const y=padT+cH*(1-i/4);
+    ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(W-padR,y); ctx.stroke();
+  }
+
+  data.forEach((d,i)=>{
+    const x=padL+(i/(data.length))*(cW)+(cW/data.length-barW)/2;
+    // Wrong bar
+    const wH=(d.wrong/maxVal)*cH;
+    ctx.fillStyle='rgba(192,57,43,0.7)';
+    ctx.beginPath();
+    ctx.roundRect(x,padT+cH-wH,barW/2-1,wH,3);
+    ctx.fill();
+    // Correct bar
+    const cH2=(d.correct/maxVal)*cH;
+    ctx.fillStyle='rgba(39,174,96,0.8)';
+    ctx.beginPath();
+    ctx.roundRect(x+barW/2+1,padT+cH-cH2,barW/2-1,cH2,3);
+    ctx.fill();
+    // Date label
+    ctx.fillStyle='#6b6760';
+    ctx.font=`10px DM Mono, monospace`;
+    ctx.textAlign='center';
+    ctx.fillText(d.date.substring(0,5),x+barW/2,H-8);
+  });
+}
+
+// ───── SHARE CARD ─────
+function generateShareCard(){
+  const ownerName=localStorage.getItem('cadOwnerName')||'Concurseira(o)';
+  const today=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+  const todayTs=new Date().setHours(0,0,0,0);
+  const todaySessions=timerSessions.filter(s=>s.ts>=todayTs);
+  const totalSecs=todaySessions.reduce((a,s)=>a+s.seconds,0);
+  const weekTs=Date.now()-7*86400000;
+  const weekSecs=timerSessions.filter(s=>s.ts>=weekTs).reduce((a,s)=>a+s.seconds,0);
+  const lastFlash=flashResults[flashResults.length-1];
+
+  document.getElementById('shareCardName').textContent=ownerName;
+  document.getElementById('shareCardTime').textContent=timerFormat(totalSecs);
+  document.getElementById('shareCardStats').innerHTML=
+    `⏱ Semana: ${timerFormat(weekSecs)}<br>`+
+    (lastFlash?`🃏 Última sessão: ${lastFlash.correct} acertos de ${lastFlash.total}`:`📚 ${errors.length} erros registrados`);
+  document.getElementById('shareCardDate').textContent=today;
+
+  document.getElementById('shareOverlay').style.display='flex';
+}
+function generateShareCard(){
+  const ownerName=localStorage.getItem('cadOwnerName')||'Concurseira(o)';
+  const today=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+  const todayTs=new Date().setHours(0,0,0,0);
+  const todaySessions=timerSessions.filter(s=>s.ts>=todayTs);
+  const totalSecsToday=todaySessions.reduce((a,s)=>a+s.seconds,0);
+  const totalSecsAll=timerSessions.reduce((a,s)=>a+s.seconds,0);
+  const lastFlash=flashResults[flashResults.length-1];
+
+  document.getElementById('shareCardName').textContent=ownerName;
+  document.getElementById('shareCardTime').textContent=timerFormat(totalSecsToday||timerSeconds||0);
+  document.getElementById('shareCardStats').innerHTML=
+    `⏱ Total acumulado: ${timerFormat(totalSecsAll)}<br>`+
+    (lastFlash?`🃏 Última sessão: ${lastFlash.correct} acertos de ${lastFlash.total} cartões`:`📚 ${errors.length} erros registrados no caderno`);
+  document.getElementById('shareCardDate').textContent=today;
+  document.getElementById('shareOverlay').style.display='flex';
+}
+function closeShareCard(){document.getElementById('shareOverlay').style.display='none';}
+function downloadShareCard(){
+  const msg=document.createElement('div');
+  msg.style.cssText='position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:#252320;color:#f0ece4;padding:0.75rem 1.5rem;border-radius:10px;font-size:0.85rem;z-index:400';
+  msg.textContent='Tire um print da tela para salvar o card! 📸';
+  document.body.appendChild(msg);
+  setTimeout(()=>msg.remove(),3500);
+}
+
+// ───── FRASE MOTIVACIONAL DIÁRIA ─────
+const FRASES = [
+  'Cada erro revisado é um passo mais perto da aprovação.',
+  'A consistência supera o talento todos os dias.',
+  'Você não está estudando. Você está construindo seu futuro.',
+  'Dificuldades são apenas questões que você ainda não aprendeu.',
+  'A sua aprovação começa hoje, com essa revisão.',
+  'Não desista. Cada página lida é uma questão a mais que você vai acertar.',
+  'O concurso dos seus sonhos está esperando por você.',
+  'Quem estuda hoje celebra amanhã.',
+  'Errou? Ótimo. Agora você sabe onde focar.',
+  'Sua dedicação hoje é o gabarito de amanhã.',
+  'Nenhum minuto de estudo é desperdiçado.',
+  'Você já é um vencedor — a prova só vai confirmar.',
+  'Foco, fé e muita revisão. A aprovação vem.',
+  'Cada hora estudada é um investimento no seu amanhã.',
+  'O cansaço de hoje é a vitória de amanhã.',
+  'Não compare seu progresso com o de ninguém. Olhe só para frente.',
+  'A aprovação não é sorte. É rotina.',
+  'Seja o candidato que a banca não consegue reprovar.',
+  'Erros no caderno significam menos erros na prova.',
+  'Hoje você registrou um erro. Amanhã você acerta.',
+  'Consistência é o único atalho que funciona.',
+  'Não existe estudo perdido. Existe conhecimento acumulado.',
+  'O próximo acerto começa com o erro de hoje.',
+  'Você consegue. Acredite e estude.',
+  'Cada revisão feita é uma questão garantida na prova.',
+  'Seja teimoso com seus objetivos.',
+  'Disciplina é escolher o que você quer mais, e não o que quer agora.',
+  'Sua história de aprovação está sendo escrita hoje.',
+  'O dia da prova vai mostrar o trabalho das madrugadas.',
+  'Você já chegou até aqui. Continue.',
+];
+
+function getDailyPhrase(){
+  const day = new Date().getDate() + new Date().getMonth() * 31;
+  return FRASES[day % FRASES.length];
+}
+
+function renderMotivationalBar(){
+  const bar = document.getElementById('motivationalBar');
+  if(bar) bar.textContent = getDailyPhrase();
+}
+
+document.querySelectorAll('.modal-overlay').forEach(o=>{
+  o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');});
+});
+</script>
+</body>
+</html>
