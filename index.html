@@ -950,8 +950,16 @@
       </div>
 
       <div id="viewRevision">
-        <h2 class="section-title">Painel de Revisão</h2>
-        <p class="section-subtitle">Questões pendentes de revisão por prioridade.</p>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;margin-bottom:0.4rem">
+          <div>
+            <h2 class="section-title">Painel de Revisão</h2>
+            <p class="section-subtitle">Questões pendentes de revisão por prioridade.</p>
+          </div>
+          <button class="btn-add" id="btnMarkAllRevised" data-action="mark-all-revised" style="background:var(--surface2);color:var(--text2);border:1px solid var(--border);display:none">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Marcar todas como revisadas
+          </button>
+        </div>
         <div class="revision-pills" style="margin-bottom:1.35rem;display:flex;gap:.38rem">
           <span class="rev-pill r24" style="cursor:pointer" data-action="render-revision" data-revision="24h">24h</span>
           <span class="rev-pill r7"  style="cursor:pointer" data-action="render-revision" data-revision="7d">7 dias</span>
@@ -1486,6 +1494,31 @@
   <span class="toast-msg" id="toastMsg">Salvo!</span>
 </div>
 
+<!-- MODAL CONFIRM CUSTOMIZADO -->
+<div class="modal-overlay" id="modalConfirm">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <h3 id="confirmTitle">Confirmar ação</h3>
+    </div>
+    <div class="modal-body">
+      <p id="confirmMsg" style="font-size:0.9rem;color:var(--text2);line-height:1.6"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" id="confirmCancelBtn">Cancelar</button>
+      <button class="btn-save" id="confirmOkBtn" style="background:var(--red)">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOADING OVERLAY -->
+<div id="loadingOverlay" style="display:none;position:fixed;inset:0;background:rgba(15,14,12,0.7);z-index:9999;display:none;align-items:center;justify-content:center;flex-direction:column;gap:1rem">
+  <div style="width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite"></div>
+  <span id="loadingMsg" style="font-size:0.85rem;color:var(--text2)">Carregando...</span>
+</div>
+<style>
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+
 <script>
 // ───── SUPABASE ─────
 // Tenta carregar do config.js externo (desenvolvimento local), depois usa o inline como fallback (GitHub Pages)
@@ -1502,6 +1535,38 @@ let currentFolder  = 'all';
 let currentDiff    = '';
 let editingId      = null;
 let detailId       = null;
+
+// ───── CONFIRM MODAL (substitui confirm() nativo) ─────
+function showConfirm(title, msg, okLabel='Confirmar', danger=true){
+  return new Promise(resolve => {
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmMsg').textContent   = msg;
+    const okBtn = document.getElementById('confirmOkBtn');
+    okBtn.textContent = okLabel;
+    okBtn.style.background = danger ? 'var(--red)' : 'var(--accent)';
+    okBtn.style.color = danger ? '#fff' : '#000';
+    const overlay = document.getElementById('modalConfirm');
+    overlay.classList.add('open');
+    const cleanup = (result) => {
+      overlay.classList.remove('open');
+      okBtn.replaceWith(okBtn.cloneNode(true));
+      document.getElementById('confirmCancelBtn').replaceWith(document.getElementById('confirmCancelBtn').cloneNode(true));
+      resolve(result);
+    };
+    document.getElementById('confirmOkBtn').addEventListener('click', ()=>cleanup(true), {once:true});
+    document.getElementById('confirmCancelBtn').addEventListener('click', ()=>cleanup(false), {once:true});
+  });
+}
+
+// ───── LOADING OVERLAY ─────
+function showLoading(msg='Salvando...'){
+  const el = document.getElementById('loadingOverlay');
+  document.getElementById('loadingMsg').textContent = msg;
+  el.style.display = 'flex';
+}
+function hideLoading(){
+  document.getElementById('loadingOverlay').style.display = 'none';
+}
 
 // ───── AUTH ─────
 function showAuthScreen(){
@@ -1616,10 +1681,13 @@ async function submitForcedPasswordChange(){
 }
 
 async function authSignOut(){
-  if(!confirm('Deseja sair do painel?')) return;
+  const ok = await showConfirm('Sair do painel','Tem certeza que deseja sair? Seus dados estão salvos na nuvem.','Sair', false);
+  if(!ok) return;
   await supa.auth.signOut();
   currentUser = null;
   errors=[]; folders=[]; customMaterias=[];
+  notes=[]; timerSessions=[]; flashResults=[];
+  _appLaunched = false;
   location.reload();
 }
 
@@ -1791,6 +1859,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   if(inp) inp.addEventListener('keydown', e=>{ if(e.key==='Enter') saveOwnerName(); });
 });
 
+let _appLaunched = false;
 function launchApp(name){
   document.getElementById('app').style.display='block';
   document.getElementById('headerOwnerName').textContent = '✦ ' + name;
@@ -1799,6 +1868,9 @@ function launchApp(name){
   renderNotes(); renderTimerHistory(); drawChart();
   setTimeout(updateStorageMeter, 100);
   setTimeout(renderMotivationalBar, 200);
+  // Proteção contra duplicate listeners em relogin sem page refresh
+  if(_appLaunched) return;
+  _appLaunched = true;
 }
 
 // ───── MATÉRIAS ─────
@@ -1872,9 +1944,13 @@ function renameFolder(i,newName){
   errors.forEach(e=>{if(e.folder===old)e.folder=newName.trim();});
   saveData(); renderFolders();
 }
-function deleteFolder(i){
+async function deleteFolder(i){
   const name=folders[i], count=errors.filter(e=>e.folder===name).length;
-  if(!confirm(count>0?`Excluir "${name}"?\n${count} erro(s) ficarão sem caderno.`:`Excluir "${name}"?`))return;
+  const msg = count>0
+    ? `Excluir o caderno "${name}"? Os ${count} erro(s) dentro dele ficarão sem caderno.`
+    : `Excluir o caderno "${name}"?`;
+  const ok = await showConfirm('Excluir caderno', msg, 'Excluir');
+  if(!ok) return;
   if(currentFolder===name){currentFolder='all';document.getElementById('currentFolderTitle').textContent='Todos os Erros';}
   errors.forEach(e=>{if(e.folder===name)e.folder='_sem_caderno_';});
   folders.splice(i,1); saveData(); renderFolders(); renderCards();
@@ -1986,6 +2062,33 @@ function filterDiff(d,el){
 }
 function filterRevision(type){showView('revision');renderRevisionView(type);}
 
+async function markAllRevised(){
+  const pending = errors.filter(e=>isOverdue(e));
+  if(!pending.length){ showToast('Nenhuma revisão pendente.','warn'); return; }
+  const ok = await showConfirm(
+    'Marcar todas como revisadas',
+    `Isso marcará ${pending.length} questão(ões) pendente(s) como revisadas agora. Continuar?`,
+    'Marcar todas', false
+  );
+  if(!ok) return;
+  showLoading(`Marcando ${pending.length} revisões...`);
+  const now = Date.now();
+  errors = errors.map(e=>{
+    if(!isOverdue(e)) return e;
+    const schedule = REV_SCHEDULE[e.dificuldade]||[7];
+    const newStage = Math.min((e.revStage||0)+1, schedule.length);
+    return {...e, lastRevision:now, revStage:newStage};
+  });
+  try{
+    // Salva em lote no Supabase
+    const updates = errors.filter(e=>pending.find(p=>p.id===e.id));
+    for(const u of updates){ await saveErrorToCloud(u); }
+  }catch(err){ console.error(err); }
+  finally{ hideLoading(); }
+  saveData(); updateStats(); renderRevisionView('all'); renderCards();
+  showToast(`${pending.length} revisão(ões) marcadas! 🏆`,'ok');
+}
+
 // ───── REVISION ─────
 function renderRevisionView(type){
   const now=Date.now(),d=86400000;
@@ -2002,13 +2105,16 @@ function renderRevisionView(type){
     list=errors.filter(e=>isOverdue(e));
   }
   const grid=document.getElementById('revisionGrid');
+  const btnMarkAll = document.getElementById('btnMarkAllRevised');
   if(!list.length){
+    if(btnMarkAll) btnMarkAll.style.display='none';
     grid.innerHTML=`<div class="empty-state">
       <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
       <h3>Tudo em dia!</h3><p>Nenhuma questão pendente neste período.</p>
     </div>`;
     return;
   }
+  if(btnMarkAll) btnMarkAll.style.display = list.length > 1 ? 'flex' : 'none';
   grid.innerHTML=list.map(e=>cardHTML(e)).join('');
 }
 
@@ -2023,6 +2129,8 @@ function openForm(prefillId){
   populateMaterias();
   if(editingId){
     const e=errors.find(x=>x.id===editingId);
+    // Bug fix: erro pode ter sido deletado em outra aba/dispositivo
+    if(!e){ showToast('Registro não encontrado. Pode ter sido excluído.','warn'); editingId=null; return; }
     document.getElementById('fMateria').value =e.materia;
     document.getElementById('fBanca').value   =e.banca;
     document.getElementById('fAssunto').value =e.assunto;
@@ -2063,16 +2171,24 @@ async function saveError(){
   let targetFolder = manualFolder||'_sem_caderno_';
 
   if(!editingId){
-    // Se não escolheu caderno manualmente, usa a matéria como caderno
     if(!manualFolder || manualFolder==='_sem_caderno_'){
       targetFolder = materia;
       if(!folders.includes(materia)){
         folders.push(materia);
-        // ordena alfabeticamente
         folders.sort((a,b)=>a.localeCompare(b,'pt'));
       }
     }
   }
+
+  // Bug fix: cache o objeto editado uma única vez (evita múltiplos errors.find)
+  const existingEntry = editingId ? errors.find(x=>x.id===editingId) : null;
+  if(editingId && !existingEntry){
+    showToast('Registro não encontrado. Pode ter sido excluído.','warn');
+    closeForm(); return;
+  }
+
+  // Bug fix: se dificuldade mudou ao editar, reseta o ciclo de revisão
+  const difChanged = existingEntry && existingEntry.dificuldade !== dif;
 
   const entry={
     id:          editingId||Date.now().toString(),
@@ -2086,21 +2202,26 @@ async function saveError(){
     artigo:      document.getElementById('fArtigo').value,
     folder:      targetFolder,
     dataQuestao: document.getElementById('fData').value,
-    createdAt:   editingId?errors.find(x=>x.id===editingId).createdAt:Date.now(),
-    lastRevision:editingId?errors.find(x=>x.id===editingId).lastRevision:null,
-    revStage:    editingId?errors.find(x=>x.id===editingId).revStage:0
+    createdAt:   existingEntry ? existingEntry.createdAt : Date.now(),
+    // Se mudou a dificuldade, reseta a revisão
+    lastRevision: difChanged ? null : (existingEntry ? existingEntry.lastRevision : null),
+    revStage:     difChanged ? 0    : (existingEntry ? existingEntry.revStage    : 0)
   };
+
   const isNewEntry = !editingId;
   errors=editingId?errors.map(x=>x.id===editingId?entry:x):[...errors,entry];
+
+  showLoading(isNewEntry ? 'Salvando erro...' : 'Atualizando...');
   try{
     await saveErrorToCloud(entry);
-    // Auto-create folder in cloud
     if(isNewEntry && targetFolder !== '_sem_caderno_'){
       await saveFoldersToCloud();
     }
   }catch(err){
     console.error(err);
     showToast('Erro ao sincronizar com a nuvem. Tente novamente.','warn');
+  } finally {
+    hideLoading();
   }
   saveData();closeForm();renderCards();renderFolders();updateStats();
 
@@ -2108,7 +2229,7 @@ async function saveError(){
     const msgs = {dificil:'Questão difícil → revise em 24h!',medio:'Questão média → revise em 7 dias!',facil:'Questão fácil → revise em 30 dias!'};
     showToast(msgs[dif]||'Erro registrado!','rev');
   } else {
-    showToast('Erro atualizado!','ok');
+    showToast(difChanged ? 'Dificuldade alterada — ciclo de revisão reiniciado!' : 'Erro atualizado!','ok');
   }
 }
 
@@ -2186,16 +2307,22 @@ function closeDetail(){document.getElementById('modalDetail').classList.remove('
 async function markRevision(id, stage){
   errors=errors.map(e=>{
     if(e.id!==id)return e;
-    const newStage = stage !== undefined ? stage : (e.revStage||0)+1;
+    const schedule = REV_SCHEDULE[e.dificuldade]||[7];
+    const rawStage = stage !== undefined ? stage : (e.revStage||0)+1;
+    // Bug fix: trava o revStage no máximo do ciclo (nunca vai além)
+    const newStage = Math.min(rawStage, schedule.length);
     return{...e, lastRevision:Date.now(), revStage:newStage};
   });
   const updated = errors.find(x=>x.id===id);
   if(updated){
+    showLoading('Marcando revisão...');
     try{
       await saveErrorToCloud(updated);
     }catch(err){
       console.error(err);
       showToast('Falha ao sincronizar revisão na nuvem.','warn');
+    } finally {
+      hideLoading();
     }
   }
   saveData();updateStats();closeDetail();
@@ -2210,14 +2337,18 @@ async function markRevision(id, stage){
   renderCards();
 }
 async function deleteError(){
-  if(!confirm('Excluir este registro?'))return;
+  const ok = await showConfirm('Excluir registro','Tem certeza que deseja excluir este registro? Esta ação não pode ser desfeita.','Excluir');
+  if(!ok) return;
+  showLoading('Excluindo...');
   try{
     await deleteErrorFromCloud(detailId);
   }catch(err){
     console.error(err);
+    hideLoading();
     showToast('Falha ao excluir no Supabase.','warn');
     return;
   }
+  hideLoading();
   errors=errors.filter(e=>e.id!==detailId);
   saveData();closeDetail();renderCards();renderFolders();updateStats();showToast('Excluído.','warn');
 }
@@ -2486,7 +2617,7 @@ async function confirmImport(){
 
   // Salvar tudo na nuvem se logado
   if(currentUser){
-    showToast('Restaurando dados na nuvem...','ok');
+    showLoading('Restaurando dados na nuvem...');
     const uid = currentUser.id;
     // Erros
     if(errors.length){
@@ -2522,6 +2653,7 @@ async function confirmImport(){
     saveData();
   }
 
+  hideLoading();
   closeImport();
   renderFolders(); renderCards(); updateStats(); populateMaterias();
   renderNotes(); renderTimerHistory(); drawChart();
@@ -2899,22 +3031,22 @@ async function saveNote(){
     createdAt:Date.now()
   };
   notes.push(note);
-  if(currentUser){
-    await supa.from('notes').insert({
-      id: note.id,
-      user_id: currentUser.id,
-      title: note.title,
-      body: note.body,
-      tag: note.tag,
-      created_at: note.createdAt
-    });
-  }
   closeNoteForm();
   renderNotes();
   showToast('Nota salva!','ok');
+  if(currentUser){
+    try{
+      await supa.from('notes').insert({
+        id: note.id, user_id: currentUser.id,
+        title: note.title, body: note.body,
+        tag: note.tag, created_at: note.createdAt
+      });
+    }catch(err){ console.error('Erro ao salvar nota:', err); }
+  }
 }
 async function deleteNote(id){
-  if(!confirm('Excluir esta nota?'))return;
+  const ok = await showConfirm('Excluir nota','Deseja excluir esta nota permanentemente?','Excluir');
+  if(!ok) return;
   notes=notes.filter(n=>n.id!==id);
   if(currentUser){
     await supa.from('notes').delete().eq('id', id).eq('user_id', currentUser.id);
@@ -3014,7 +3146,8 @@ function renderTimerHistory(){
 }
 
 async function deleteTimerSession(id){
-  if(!confirm('Excluir esta sessão?'))return;
+  const ok = await showConfirm('Excluir sessão','Deseja excluir esta sessão do cronômetro?','Excluir');
+  if(!ok) return;
   timerSessions=timerSessions.filter(s=>s.id!==id);
   if(currentUser){
     await supa.from('timer_sessions').delete().eq('id', id).eq('user_id', currentUser.id);
@@ -3201,6 +3334,8 @@ document.addEventListener('click', (event)=>{
     filterDiff(trigger.getAttribute('data-diff') || '', trigger);
   } else if(action === 'back-to-folders'){
     backToFolders();
+  } else if(action === 'mark-all-revised'){
+    markAllRevised();
   } else if(action === 'render-revision'){
     renderRevisionView(trigger.getAttribute('data-revision') || 'all');
   } else if(action === 'init-flashcards'){
@@ -3310,15 +3445,28 @@ document.addEventListener('focusout', (event)=>{
   }
 });
 
-document.getElementById('searchInput')?.addEventListener('input', ()=>renderCards());
+// Debounce na busca — evita re-render a cada tecla com muitos erros
+let _searchDebounce = null;
+document.getElementById('searchInput')?.addEventListener('input', ()=>{
+  clearTimeout(_searchDebounce);
+  _searchDebounce = setTimeout(()=>renderCards(), 180);
+});
+
 document.getElementById('importFile')?.addEventListener('change', importData);
-document.getElementById('flashFolderFilter')?.addEventListener('change', initFlashcards);
+
+// Bug fix: reseta o flashcard ao trocar filtro
+document.getElementById('flashFolderFilter')?.addEventListener('change', ()=>{
+  flashIndex=0; flashCorrect=0; flashWrong=0;
+  initFlashcards();
+});
+
 document.getElementById('fMateria')?.addEventListener('change', (event)=>handleMateriaChange(event.target.value));
 
 document.querySelectorAll('.modal-overlay').forEach(o=>{
   o.addEventListener('click',e=>{
     if(e.target!==o) return;
     if(o.id === 'modalForcePassword') return;
+    if(o.id === 'modalConfirm') return; // confirm fecha apenas via botões
     o.classList.remove('open');
   });
 });
