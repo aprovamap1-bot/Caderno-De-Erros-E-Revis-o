@@ -1628,10 +1628,13 @@ async function loadUserData(){
   if(!currentUser) return;
   const uid = currentUser.id;
 
-  const [{data:errosData},{data:foldersData},{data:materiasData}] = await Promise.all([
+  const [{data:errosData},{data:foldersData},{data:materiasData},{data:notesData},{data:timerData},{data:flashData}] = await Promise.all([
     supa.from('erros').select('*').eq('user_id', uid).order('created_at'),
     supa.from('cadernos').select('*').eq('user_id', uid).order('nome'),
     supa.from('materias_custom').select('*').eq('user_id', uid),
+    supa.from('notes').select('*').eq('user_id', uid).order('created_at'),
+    supa.from('timer_sessions').select('*').eq('user_id', uid).order('ts', {ascending: false}),
+    supa.from('flash_results').select('*').eq('user_id', uid).order('ts'),
   ]);
 
   errors = (errosData||[]).map(r=>({
@@ -1646,6 +1649,23 @@ async function loadUserData(){
 
   folders = (foldersData||[]).map(r=>r.nome);
   customMaterias = (materiasData||[]).map(r=>r.nome);
+
+  // Notas
+  notes = (notesData||[]).map(r=>({
+    id: r.id, title: r.title||'', body: r.body||'',
+    tag: r.tag||'importante', createdAt: r.created_at
+  }));
+
+  // Sessões do cronômetro
+  timerSessions = (timerData||[]).map(r=>({
+    id: r.id, seconds: r.seconds, duration: r.duration,
+    date: r.date, time: r.time, ts: r.ts
+  }));
+
+  // Resultados dos flashcards
+  flashResults = (flashData||[]).map(r=>({
+    date: r.date, ts: r.ts, correct: r.correct, wrong: r.wrong, total: r.total
+  }));
 }
 
 async function saveData(){
@@ -1738,7 +1758,8 @@ const SUBJECT_ICONS = {
 
 // ───── INIT ─────
 function enterApp(){
-  const ownerName = localStorage.getItem('cadOwnerName');
+  // Nome vem do Supabase Auth (user_metadata.name) ou do localStorage como fallback
+  let ownerName = currentUser?.user_metadata?.name || localStorage.getItem('cadOwnerName');
   if(!ownerName){
     // Primeira vez — mostra tela de nome
     document.getElementById('splash').style.display='none';
@@ -1751,11 +1772,15 @@ function enterApp(){
   }
 }
 
-function saveOwnerName(){
+async function saveOwnerName(){
   const input = document.getElementById('setupNameInput');
   const name = input.value.trim();
   if(!name){ input.focus(); input.style.borderColor='var(--red)'; return; }
   localStorage.setItem('cadOwnerName', name);
+  // Salva também no Supabase Auth metadata
+  if(currentUser){
+    await supa.auth.updateUser({ data: { name } });
+  }
   document.getElementById('setupName').classList.remove('visible');
   launchApp(name);
 }
@@ -1771,6 +1796,7 @@ function launchApp(name){
   document.getElementById('headerOwnerName').textContent = '✦ ' + name;
   document.getElementById('pageOwnerName').textContent   = 'de ' + name;
   renderFolders(); renderCards(); updateStats(); populateMaterias();
+  renderNotes(); renderTimerHistory(); drawChart();
   setTimeout(updateStorageMeter, 100);
   setTimeout(renderMotivationalBar, 200);
 }
@@ -2268,15 +2294,11 @@ function showToast(msg,type){
 // ───── STORAGE METER ─────
 function updateStorageMeter(){
   try{
-    // Measure all caderno keys
-    const keys = ['cadErros_v2','cadFolders_v2','cadMaterias_v2'];
-    let usedBytes = 0;
-    keys.forEach(k=>{
-      const val = localStorage.getItem(k);
-      if(val) usedBytes += (new TextEncoder().encode(val)).length;
-    });
+    // Mede pelo tamanho dos dados em memória (100% nuvem)
+    const allData = JSON.stringify({errors, folders, customMaterias, notes, timerSessions, flashResults});
+    let usedBytes = (new TextEncoder().encode(allData)).length;
 
-    const LIMIT  = 5 * 1024 * 1024; // 5 MB conservative
+    const LIMIT  = 500 * 1024 * 1024; // 500 MB (limite Supabase gratuito)
     const pct    = Math.min(100, Math.round((usedBytes / LIMIT) * 100));
     const usedKB = (usedBytes / 1024).toFixed(1);
     const usedMB = (usedBytes / (1024*1024)).toFixed(2);
@@ -2332,17 +2354,20 @@ function updateStorageMeter(){
   }
 }
 function exportData(){
-  if(!errors.length && !folders.length){
+  if(!errors.length && !folders.length && !notes.length){
     showToast('Nenhum dado para exportar ainda.','warn');
     return;
   }
   const payload = {
-    version: '2.0',
+    version: '3.0',
     exportedAt: new Date().toISOString(),
     exportedAtBR: new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}),
     errors,
     folders,
-    customMaterias
+    customMaterias,
+    notes,
+    timerSessions,
+    flashResults
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
   const url  = URL.createObjectURL(blob);
@@ -2352,7 +2377,7 @@ function exportData(){
   a.download = `caderno-de-erros-backup-${date}.json`;
   a.click();
   URL.revokeObjectURL(url);
-  showToast(`Backup exportado! ${errors.length} registro(s) salvos.`,'ok');
+  showToast(`Backup exportado! ${errors.length} erro(s), ${notes.length} nota(s) salvos.`,'ok');
 }
 
 let pendingImport = null;
@@ -2450,18 +2475,57 @@ function importData(event){
   reader.readAsText(file);
 }
 
-function confirmImport(){
+async function confirmImport(){
   if(!pendingImport) return;
   errors         = pendingImport.errors         || [];
   folders        = pendingImport.folders        || [];
   customMaterias = pendingImport.customMaterias || [];
-  saveData();
+  notes          = pendingImport.notes          || [];
+  timerSessions  = pendingImport.timerSessions  || [];
+  flashResults   = pendingImport.flashResults   || [];
+
+  // Salvar tudo na nuvem se logado
+  if(currentUser){
+    showToast('Restaurando dados na nuvem...','ok');
+    const uid = currentUser.id;
+    // Erros
+    if(errors.length){
+      await supa.from('erros').delete().eq('user_id', uid);
+      const rows = errors.map(e=>({
+        id:e.id, user_id:uid, materia:e.materia, banca:e.banca||'',
+        assunto:e.assunto, onde:e.onde||'', dificuldade:e.dificuldade,
+        keywords:e.keywords||'', questao:e.questao||'', obs:e.obs||'',
+        lei:e.lei||'', artigo:e.artigo||'', folder:e.folder||'_sem_caderno_',
+        data_questao:e.dataQuestao||'',
+        created_at: e.createdAt ? new Date(e.createdAt).toISOString() : new Date().toISOString(),
+        last_revision: e.lastRevision ? new Date(e.lastRevision).toISOString() : null,
+        rev_stage: e.revStage||0
+      }));
+      for(let i=0;i<rows.length;i+=50) await supa.from('erros').upsert(rows.slice(i,i+50));
+    }
+    // Cadernos
+    await supa.from('cadernos').delete().eq('user_id', uid);
+    if(folders.length) await supa.from('cadernos').insert(folders.map(f=>({user_id:uid,nome:f})));
+    // Matérias
+    await supa.from('materias_custom').delete().eq('user_id', uid);
+    if(customMaterias.length) await supa.from('materias_custom').insert(customMaterias.map(m=>({user_id:uid,nome:m})));
+    // Notas
+    await supa.from('notes').delete().eq('user_id', uid);
+    if(notes.length) await supa.from('notes').insert(notes.map(n=>({id:n.id,user_id:uid,title:n.title||'',body:n.body||'',tag:n.tag||'importante',created_at:n.createdAt})));
+    // Sessões cronômetro
+    await supa.from('timer_sessions').delete().eq('user_id', uid);
+    if(timerSessions.length) await supa.from('timer_sessions').insert(timerSessions.map(s=>({id:s.id,user_id:uid,seconds:s.seconds,duration:s.duration,date:s.date,time:s.time,ts:s.ts})));
+    // Flash results
+    await supa.from('flash_results').delete().eq('user_id', uid);
+    if(flashResults.length) await supa.from('flash_results').insert(flashResults.map(r=>({user_id:uid,date:r.date,ts:r.ts,correct:r.correct,wrong:r.wrong,total:r.total})));
+  } else {
+    saveData();
+  }
+
   closeImport();
-  renderFolders();
-  renderCards();
-  updateStats();
-  populateMaterias();
-  showToast(`Importado! ${errors.length} registro(s) restaurados.`,'ok');
+  renderFolders(); renderCards(); updateStats(); populateMaterias();
+  renderNotes(); renderTimerHistory(); drawChart();
+  showToast(`Importado! ${errors.length} erro(s), ${notes.length} nota(s) restaurados.`,'ok');
   pendingImport = null;
 }
 
@@ -2664,7 +2728,7 @@ function backToFolders(){
   renderMateriaFolders();
 }
 let flashQueue=[], flashIndex=0, flashCorrect=0, flashWrong=0;
-let flashResults=JSON.parse(localStorage.getItem('cadFlashResults')||'[]');
+let flashResults=[];
 
 function populateFlashFolderFilter(){
   const sel=document.getElementById('flashFolderFilter');
@@ -2752,15 +2816,31 @@ function updateFlashStats(){
   document.getElementById('flashRemain').textContent=Math.max(0,flashQueue.length-flashIndex);
 }
 
-function saveFlashResult(){
+async function saveFlashResult(){
   if(!flashQueue.length)return;
-  flashResults.push({date:new Date().toLocaleDateString('pt-BR'),ts:Date.now(),correct:flashCorrect,wrong:flashWrong,total:flashQueue.length});
+  const result={date:new Date().toLocaleDateString('pt-BR'),ts:Date.now(),correct:flashCorrect,wrong:flashWrong,total:flashQueue.length};
+  flashResults.push(result);
   if(flashResults.length>30)flashResults=flashResults.slice(-30);
-  localStorage.setItem('cadFlashResults',JSON.stringify(flashResults));
+  if(currentUser){
+    await supa.from('flash_results').insert({
+      user_id: currentUser.id,
+      date: result.date,
+      ts: result.ts,
+      correct: result.correct,
+      wrong: result.wrong,
+      total: result.total
+    });
+    // Manter só os últimos 30 no banco também
+    const {data:allResults} = await supa.from('flash_results').select('id').eq('user_id', currentUser.id).order('ts');
+    if(allResults && allResults.length > 30){
+      const toDelete = allResults.slice(0, allResults.length - 30).map(r=>r.id);
+      await supa.from('flash_results').delete().in('id', toDelete);
+    }
+  }
 }
 
 // ───── NOTAS ─────
-let notes=JSON.parse(localStorage.getItem('cadNotes')||'[]');
+let notes=[];
 let noteFilterCurrent='';
 
 function renderNotes(){
@@ -2808,32 +2888,44 @@ function selectNoteTag(tag,el){
   el.classList.add('active');
   document.getElementById('noteTag').value=tag;
 }
-function saveNote(){
+async function saveNote(){
   const body=document.getElementById('noteBody').value.trim();
   if(!body){showToast('Escreva algo na nota!','warn');return;}
-  notes.push({
+  const note={
     id:Date.now().toString(),
     title:document.getElementById('noteTitle').value.trim(),
     body,
     tag:document.getElementById('noteTag').value,
     createdAt:Date.now()
-  });
-  localStorage.setItem('cadNotes',JSON.stringify(notes));
+  };
+  notes.push(note);
+  if(currentUser){
+    await supa.from('notes').insert({
+      id: note.id,
+      user_id: currentUser.id,
+      title: note.title,
+      body: note.body,
+      tag: note.tag,
+      created_at: note.createdAt
+    });
+  }
   closeNoteForm();
   renderNotes();
   showToast('Nota salva!','ok');
 }
-function deleteNote(id){
+async function deleteNote(id){
   if(!confirm('Excluir esta nota?'))return;
   notes=notes.filter(n=>n.id!==id);
-  localStorage.setItem('cadNotes',JSON.stringify(notes));
+  if(currentUser){
+    await supa.from('notes').delete().eq('id', id).eq('user_id', currentUser.id);
+  }
   renderNotes();
   showToast('Nota excluída.','warn');
 }
 
 // ───── CRONÔMETRO ─────
 let timerInterval=null, timerSeconds=0, timerRunning=false;
-let timerSessions=JSON.parse(localStorage.getItem('cadTimerSessions')||'[]');
+let timerSessions=[];
 
 function timerFormat(s){
   const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;
@@ -2860,7 +2952,7 @@ function timerPause(){
     document.getElementById('timerPauseBtn').innerHTML=`<svg viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pausar`;
   }
 }
-function timerStop(){
+async function timerStop(){
   clearInterval(timerInterval); timerRunning=false;
   if(timerSeconds<5){showToast('Sessão muito curta!','warn');timerReset();return;}
   const session={
@@ -2873,7 +2965,17 @@ function timerStop(){
   };
   timerSessions.unshift(session);
   if(timerSessions.length>50)timerSessions=timerSessions.slice(0,50);
-  localStorage.setItem('cadTimerSessions',JSON.stringify(timerSessions));
+  if(currentUser){
+    await supa.from('timer_sessions').insert({
+      id: session.id,
+      user_id: currentUser.id,
+      seconds: session.seconds,
+      duration: session.duration,
+      date: session.date,
+      time: session.time,
+      ts: session.ts
+    });
+  }
   timerReset();
   renderTimerHistory();
   drawChart();
@@ -2911,10 +3013,12 @@ function renderTimerHistory(){
   `).join('');
 }
 
-function deleteTimerSession(id){
+async function deleteTimerSession(id){
   if(!confirm('Excluir esta sessão?'))return;
   timerSessions=timerSessions.filter(s=>s.id!==id);
-  localStorage.setItem('cadTimerSessions',JSON.stringify(timerSessions));
+  if(currentUser){
+    await supa.from('timer_sessions').delete().eq('id', id).eq('user_id', currentUser.id);
+  }
   renderTimerHistory();
   drawChart();
   if(!timerSessions.length) document.getElementById('shareBtn').style.display='none';
@@ -2978,7 +3082,7 @@ function drawChart(){
 
 // ───── SHARE CARD ─────
 function generateShareCard(){
-  const ownerName=localStorage.getItem('cadOwnerName')||'Concurseira(o)';
+  const ownerName=currentUser?.user_metadata?.name||localStorage.getItem('cadOwnerName')||'Concurseira(o)';
   const today=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
   const todayTs=new Date().setHours(0,0,0,0);
   const todaySessions=timerSessions.filter(s=>s.ts>=todayTs);
