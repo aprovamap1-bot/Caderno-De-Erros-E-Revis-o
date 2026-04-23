@@ -1453,10 +1453,14 @@
   <span class="toast-msg" id="toastMsg">Salvo!</span>
 </div>
 
+<script src="./config.js"></script>
 <script>
 // ───── SUPABASE ─────
-const SUPA_URL = 'https://nmcyzfykqymopdwavzav.supabase.co';
-const SUPA_KEY = 'sb_publishable_50oUn--L2LOaRMMHCueZkQ_s1Jx3QHF';
+const SUPA_URL = window.APP_CONFIG?.SUPABASE_URL;
+const SUPA_KEY = window.APP_CONFIG?.SUPABASE_ANON_KEY;
+if(!SUPA_URL || !SUPA_KEY){
+  throw new Error('Configuração ausente: crie o arquivo config.js com SUPABASE_URL e SUPABASE_ANON_KEY.');
+}
 const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
 let currentUser = null;
 
