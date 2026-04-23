@@ -12,16 +12,34 @@ import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
-const SUPABASE_URL   = Deno.env.get("SUPABASE_URL") ?? "";
-const SERVICE_KEY    = Deno.env.get("SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-const SITE_URL       = "https://aprovamap1-bot.github.io/Caderno-De-Erros-E-Revis-o";
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
+const SERVICE_KEY = Deno.env.get("SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const BULK_SEND_SECRET = Deno.env.get("BULK_SEND_SECRET") ?? "";
+const SITE_URL = "https://aprovamap1-bot.github.io/Caderno-De-Erros-E-Revis-o";
+const FROM_EMAIL = "MEU CADERNO DE ERROS <onboarding@resend.dev>";
 
+// Lista de usuários para envio em lote
 const USERS = [
-  { email: "brenoyure@hotmail.com",            name: "Breno Yure" },
-  { email: "fernandanascimento23@hotmail.com",  name: "Fernanda" },
-  { email: "manuelmmoura@hotmail.com",          name: "Manuel Moura" },
-  { email: "olipaty53@gmail.com",               name: "Patricia de Oliveira" },
-  { email: "mailtocosta7@gmail.com",            name: "Mailton" },
+  {
+    email: "brenoyure@hotmail.com",
+    name: "Breno Yure"
+  },
+  {
+    email: "fernandanascimento23@hotmail.com",
+    name: "Fernanda"
+  },
+  {
+    email: "manuelmmoura@hotmail.com",
+    name: "Manuel Moura"
+  },
+  {
+    email: "olipaty53@gmail.com",
+    name: "Patricia de Oliveira"
+  },
+  {
+    email: "mailtocosta7@gmail.com",
+    name: "Mailton"
+  }
 ];
 
 serve(async (req: Request) => {
@@ -29,23 +47,34 @@ serve(async (req: Request) => {
     return new Response("Method not allowed", { status: 405 });
   }
 
+  if (!RESEND_API_KEY || !SUPABASE_URL || !SERVICE_KEY) {
+    return new Response("Missing required secrets (RESEND_API_KEY/SUPABASE_URL/SERVICE_ROLE_KEY)", { status: 500 });
+  }
+
+  // Se BULK_SEND_SECRET estiver configurado, exige ?secret=... para executar.
+  if (BULK_SEND_SECRET) {
+    const provided = new URL(req.url).searchParams.get("secret");
+    if (provided !== BULK_SEND_SECRET) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+  }
+
   const supa = createClient(SUPABASE_URL, SERVICE_KEY, {
-    auth: { autoRefreshToken: false, persistSession: false },
+    auth: { autoRefreshToken: false, persistSession: false }
   });
 
   const results = [];
 
   for (const user of USERS) {
     try {
-      // Gera magic link
       const { data, error } = await supa.auth.admin.generateLink({
-        type: "magiclink",
+        type: "recovery",
         email: user.email,
-        options: { redirectTo: SITE_URL },
+        options: { redirectTo: SITE_URL }
       });
 
       if (error || !data?.properties?.action_link) {
-        results.push({ email: user.email, status: "erro_link", error: error?.message });
+        results.push({ email: user.email, status: "erro_link", error: error?.message ?? "Não foi possível gerar link" });
         continue;
       }
 
@@ -59,7 +88,7 @@ serve(async (req: Request) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: "MEU CADERNO DE ERROS <onboarding@resend.dev>",
+          from: FROM_EMAIL,
           to: [user.email],
           subject: "Seu acesso ao Caderno de Erros está pronto! 🎉",
           html: `
