@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-BR" style="background:#0f0e0c">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0f0e0c">
+<title>Compra Confirmada — MEU CADERNO DE ERROS</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f0e0c;--surface:#1a1916;--surface2:#252320;--border:#2e2c28;
+    --accent:#e8c547;--accent2:#d4773a;--accent3:#5b8fa8;
+    --text:#f0ece4;--text2:#9c9789;--text3:#6b6760;
+    --green:#27ae60;
+    --radius:12px;--shadow:0 8px 32px rgba(0,0,0,0.5);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    font-family:'DM Sans',sans-serif;
+    background:var(--bg);color:var(--text);
+    min-height:100vh;overflow-x:hidden;
+    display:flex;flex-direction:column;
+  }
+
+  /* ── HEADER ── */
+  header{
+    background:rgba(15,14,12,0.97);backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--border);
+    padding:0 1.5rem;display:flex;align-items:center;gap:1rem;height:62px;
+  }
+  .header-logo{display:flex;flex-direction:column;line-height:1;gap:0.15rem}
+  .brand-tag{font-size:0.5rem;color:var(--text3);letter-spacing:2.5px;text-transform:uppercase;font-weight:500}
+  .brand-name{font-family:'Playfair Display',serif;font-weight:900;font-size:1rem;color:var(--text)}
+  .brand-name span{color:var(--accent)}
+
+  /* ── HERO ── */
+  .hero{
+    flex:1;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+    padding:3rem 1.5rem;text-align:center;
+  }
+
+  /* Ícone de sucesso animado */
+  .success-icon{
+    width:100px;height:100px;background:var(--accent);border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    margin-bottom:2rem;
+    animation:popIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both, glow 3s ease-in-out infinite 0.6s;
+  }
+  .success-icon svg{width:48px;height:48px;stroke:#000;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+  @keyframes popIn{
+    0%{transform:scale(0);opacity:0}
+    100%{transform:scale(1);opacity:1}
+  }
+  @keyframes glow{
+    0%,100%{box-shadow:0 0 0 0 rgba(232,197,71,0)}
+    50%{box-shadow:0 0 0 18px rgba(232,197,71,0.08)}
+  }
+
+  .eyebrow{
+    font-size:0.62rem;letter-spacing:3px;text-transform:uppercase;
+    color:var(--text3);margin-bottom:0.6rem;
+    animation:fadeUp 0.5s 0.2s both;
+  }
+  h1{
+    font-family:'Playfair Display',serif;
+    font-size:clamp(2rem,6vw,3.2rem);font-weight:900;
+    line-height:1.08;letter-spacing:-1.5px;
+    margin-bottom:1rem;
+    animation:fadeUp 0.5s 0.3s both;
+  }
+  h1 span{color:var(--accent)}
+  .subtitle{
+    color:var(--text2);font-size:1.05rem;line-height:1.7;
+    max-width:480px;margin-bottom:2.5rem;
+    animation:fadeUp 0.5s 0.4s both;
+  }
+  .subtitle strong{color:var(--text)}
+
+  @keyframes fadeUp{
+    0%{opacity:0;transform:translateY(16px)}
+    100%{opacity:1;transform:translateY(0)}
+  }
+
+  /* ── CARD DE PASSOS ── */
+  .steps-card{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius);padding:1.8rem 2rem;
+    max-width:480px;width:100%;margin-bottom:2.5rem;text-align:left;
+    animation:fadeUp 0.5s 0.5s both;
+  }
+  .steps-title{
+    font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;
+    color:var(--text3);margin-bottom:1.25rem;font-weight:600;
+  }
+  .step{
+    display:flex;align-items:flex-start;gap:1rem;
+    padding:0.75rem 0;border-bottom:1px solid var(--border);
+  }
+  .step:last-child{border-bottom:none;padding-bottom:0}
+  .step:first-of-type{padding-top:0}
+  .step-num{
+    width:28px;height:28px;border-radius:50%;
+    background:var(--surface2);border:1px solid var(--border);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'DM Mono',monospace;font-size:0.72rem;
+    color:var(--accent);flex-shrink:0;margin-top:1px;
+  }
+  .step-body{}
+  .step-body strong{display:block;font-size:0.9rem;color:var(--text);margin-bottom:0.2rem}
+  .step-body span{font-size:0.82rem;color:var(--text2);line-height:1.5}
+
+  /* ── BOTÃO ── */
+  .btn-primary{
+    background:var(--accent);color:#000;border:none;
+    padding:1rem 2.8rem;font-family:'DM Sans',sans-serif;
+    font-weight:700;font-size:1rem;border-radius:50px;
+    cursor:pointer;transition:all 0.2s;
+    display:inline-flex;align-items:center;gap:0.55rem;
+    text-decoration:none;
+    animation:fadeUp 0.5s 0.6s both;
+  }
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(232,197,71,0.35)}
+  .btn-primary svg{width:16px;height:16px;fill:none;stroke:#000;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+
+  .hint{
+    margin-top:1.2rem;font-size:0.78rem;color:var(--text3);
+    animation:fadeUp 0.5s 0.7s both;
+  }
+
+  /* ── FOOTER ── */
+  footer{
+    border-top:1px solid var(--border);
+    padding:1.2rem 1.5rem;text-align:center;
+  }
+  .footer-credit{
+    display:inline-flex;align-items:center;gap:0.5rem;
+    opacity:0.35;
+  }
+  .footer-credit svg{width:12px;height:12px;fill:currentColor;color:var(--text3)}
+  .footer-credit span{font-size:0.68rem;color:var(--text3);letter-spacing:0.8px;font-weight:500}
+
+  /* ── CONFETTI (pontinho decorativo) ── */
+  .confetti-row{
+    display:flex;gap:0.5rem;justify-content:center;
+    margin-bottom:1.5rem;
+    animation:fadeUp 0.4s 0.15s both;
+  }
+  .dot{
+    width:8px;height:8px;border-radius:50%;
+    animation:bounce 1.4s ease-in-out infinite;
+  }
+  .dot:nth-child(1){background:var(--accent);animation-delay:0s}
+  .dot:nth-child(2){background:var(--accent2);animation-delay:0.2s}
+  .dot:nth-child(3){background:var(--accent3);animation-delay:0.4s}
+  .dot:nth-child(4){background:var(--accent);animation-delay:0.6s}
+  .dot:nth-child(5){background:var(--accent2);animation-delay:0.8s}
+  @keyframes bounce{
+    0%,100%{transform:translateY(0)}
+    50%{transform:translateY(-8px)}
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-logo">
+    <span class="brand-tag">Aprovação</span>
+    <span class="brand-name">caderno <span>de erros</span></span>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+
+  <!-- Ícone de check animado -->
+  <div class="success-icon">
+    <svg viewBox="0 0 24 24">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+  </div>
+
+  <!-- Pontinhos animados -->
+  <div class="confetti-row">
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+  </div>
+
+  <p class="eyebrow">Compra confirmada</p>
+  <h1>Sua jornada começa<br><span>agora!</span></h1>
+  <p class="subtitle">
+    Parabéns pela decisão! Sua conta foi criada automaticamente.<br>
+    <strong>Verifique seu e-mail</strong> — enviamos um link de acesso para você entrar no Caderno.
+  </p>
+
+  <!-- Card com os passos -->
+  <div class="steps-card">
+    <p class="steps-title">Próximos passos</p>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Abra seu e-mail</strong>
+        <span>Procure uma mensagem com o assunto "Seu acesso ao Caderno de Erros está pronto!"</span>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Clique no link de acesso</strong>
+        <span>O link é válido por 24 horas e te leva direto para o seu Caderno.</span>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <strong>Comece a registrar seus erros</strong>
+        <span>Anote as questões que errou, revise e evolua nos estudos!</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botão para o site -->
+  <a class="btn-primary" href="https://aprovamap1-bot.github.io/Caderno-De-Erros-E-Revis-o">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Ir para o Caderno
+  </a>
+
+  <p class="hint">Não encontrou o e-mail? Verifique a caixa de spam.</p>
+
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-credit">
+    <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    <span>MEU CADERNO DE ERROS &nbsp;·&nbsp; <span id="footerYear"></span></span>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('footerYear').textContent = new Date().getFullYear();
+</script>
+</body>
+</html>
