@@ -37,18 +37,16 @@ serve(async (req: Request) => {
     return new Response("Invalid JSON", { status: 400 });
   }
 
-  // ── Validação da assinatura do Kiwify ──
-  // O Kiwify pode enviar o token como query param (?token=xxx) ou no body
+  // ── Validação via secret na URL ──
+  // A segurança é feita pelo secret embutido na URL:
+  // .../kiwify-webhook?secret=KIWIFY_WEBHOOK_SECRET
   const kiwifySecret = Deno.env.get("KIWIFY_WEBHOOK_SECRET");
   if (kiwifySecret) {
     const url = new URL(req.url);
-    const tokenFromQuery = url.searchParams.get("token");
-    const tokenFromBody  = body["token"] as string | undefined;
-    const receivedToken  = tokenFromQuery || tokenFromBody;
-    console.log("Token recebido (query):", tokenFromQuery);
-    console.log("Token recebido (body):", tokenFromBody);
-    if (!receivedToken || receivedToken !== kiwifySecret) {
-      console.error("Token inválido:", receivedToken);
+    const secretFromQuery = url.searchParams.get("secret");
+    console.log("Secret recebido (query):", secretFromQuery ? "****" : "ausente");
+    if (!secretFromQuery || secretFromQuery !== kiwifySecret) {
+      console.error("Secret inválido ou ausente");
       return new Response("Unauthorized", { status: 401 });
     }
   }
