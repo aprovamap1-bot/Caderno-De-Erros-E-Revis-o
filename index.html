@@ -1448,6 +1448,38 @@
   </div>
 </div>
 
+<!-- MODAL TROCA OBRIGATÓRIA DE SENHA -->
+<div class="modal-overlay" id="modalForcePassword">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <h3>
+        <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Atualize sua senha
+      </h3>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:0.85rem;color:var(--text2);margin-bottom:0.75rem">
+        Por segurança, você precisa definir uma nova senha antes de continuar.
+      </p>
+      <div class="form-group" style="margin-bottom:0.75rem">
+        <label>Nova senha</label>
+        <input type="password" class="form-control" id="forceNewPassword" placeholder="Mínimo de 6 caracteres">
+      </div>
+      <div class="form-group">
+        <label>Confirmar nova senha</label>
+        <input type="password" class="form-control" id="forceConfirmPassword" placeholder="Repita a senha">
+      </div>
+      <div id="forcePasswordMsg" style="margin-top:0.75rem;font-size:0.8rem;color:var(--text2);min-height:1.1rem"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-save" data-action="submit-forced-password-change">
+        <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/></svg>
+        Atualizar senha
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast">
   <svg id="toastIcon" viewBox="0 0 24 24" style="color:var(--green)"><polyline points="20 6 9 17 4 12"/></svg>
@@ -1492,6 +1524,40 @@ function setAuthMsg(msg, color='var(--text2)'){
   el.style.color = color;
 }
 
+function requiresPasswordChange(user){
+  return !!user?.user_metadata?.must_change_password;
+}
+
+function setForcePasswordMsg(msg, color='var(--text2)'){
+  const el = document.getElementById('forcePasswordMsg');
+  if(!el) return;
+  el.textContent = msg;
+  el.style.color = color;
+}
+
+function openForcePasswordModal(){
+  document.getElementById('forceNewPassword').value = '';
+  document.getElementById('forceConfirmPassword').value = '';
+  setForcePasswordMsg('Defina uma senha forte para continuar.','var(--text2)');
+  document.getElementById('modalForcePassword').classList.add('open');
+}
+
+function closeForcePasswordModal(){
+  document.getElementById('modalForcePassword').classList.remove('open');
+}
+
+async function handlePostLogin(user, fallbackEmail=''){
+  currentUser = user;
+  document.getElementById('authScreen').style.display='none';
+  document.getElementById('splash').style.display='none';
+  await loadUserData();
+  const name = currentUser.user_metadata?.name || (currentUser.email || fallbackEmail).split('@')[0];
+  launchApp(name);
+  if(requiresPasswordChange(currentUser)){
+    openForcePasswordModal();
+  }
+}
+
 async function authSignIn(){
   const email = document.getElementById('authEmail').value.trim();
   const password = document.getElementById('authPassword').value;
@@ -1499,11 +1565,7 @@ async function authSignIn(){
   setAuthMsg('Entrando...','var(--accent)');
   const {data, error} = await supa.auth.signInWithPassword({email, password});
   if(error){ setAuthMsg('E-mail ou senha incorretos.','var(--red)'); return; }
-  currentUser = data.user;
-  document.getElementById('authScreen').style.display='none';
-  await loadUserData();
-  const name = currentUser.user_metadata?.name || email.split('@')[0];
-  launchApp(name);
+  await handlePostLogin(data.user, email);
 }
 
 async function authSignUp(){
@@ -1528,6 +1590,29 @@ async function authForgotPassword(){
   const {error} = await supa.auth.resetPasswordForEmail(email);
   if(error){ setAuthMsg('Erro: '+error.message,'var(--red)'); return; }
   setAuthMsg('✅ Link de redefinição enviado para seu e-mail!','var(--green)');
+}
+
+async function submitForcedPasswordChange(){
+  const newPassword = document.getElementById('forceNewPassword').value;
+  const confirmPassword = document.getElementById('forceConfirmPassword').value;
+  if(newPassword.length < 6){
+    setForcePasswordMsg('A senha precisa ter no mínimo 6 caracteres.','var(--red)');
+    return;
+  }
+  if(newPassword !== confirmPassword){
+    setForcePasswordMsg('As senhas não conferem.','var(--red)');
+    return;
+  }
+  setForcePasswordMsg('Atualizando senha...','var(--accent)');
+  const nextData = {...(currentUser?.user_metadata || {}), must_change_password: false};
+  const {data, error} = await supa.auth.updateUser({password:newPassword, data:nextData});
+  if(error){
+    setForcePasswordMsg('Erro ao atualizar senha: '+error.message,'var(--red)');
+    return;
+  }
+  currentUser = data.user || currentUser;
+  closeForcePasswordModal();
+  showToast('Senha atualizada com sucesso!','ok');
 }
 
 async function authSignOut(){
@@ -1625,11 +1710,7 @@ async function initApp(){
   // Check if user is already logged in
   const {data:{session}} = await supa.auth.getSession();
   if(session){
-    currentUser = session.user;
-    await loadUserData();
-    const name = currentUser.user_metadata?.name || currentUser.email.split('@')[0];
-    document.getElementById('splash').style.display='none';
-    launchApp(name);
+    await handlePostLogin(session.user, session.user.email || '');
   } else {
     showAuthScreen();
   }
@@ -3081,6 +3162,8 @@ document.addEventListener('click', (event)=>{
     closeImport();
   } else if(action === 'confirm-import'){
     confirmImport();
+  } else if(action === 'submit-forced-password-change'){
+    submitForcedPasswordChange();
   } else if(action === 'open-detail'){
     openDetail(trigger.getAttribute('data-id') || '');
   } else if(action === 'mark-revision'){
@@ -3129,7 +3212,11 @@ document.getElementById('flashFolderFilter')?.addEventListener('change', initFla
 document.getElementById('fMateria')?.addEventListener('change', (event)=>handleMateriaChange(event.target.value));
 
 document.querySelectorAll('.modal-overlay').forEach(o=>{
-  o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');});
+  o.addEventListener('click',e=>{
+    if(e.target!==o) return;
+    if(o.id === 'modalForcePassword') return;
+    o.classList.remove('open');
+  });
 });
 </script>
 </body>
