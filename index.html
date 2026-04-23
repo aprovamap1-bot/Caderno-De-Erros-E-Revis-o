@@ -1454,14 +1454,11 @@
   <span class="toast-msg" id="toastMsg">Salvo!</span>
 </div>
 
-<script src="./config.js"></script>
 <script>
 // ───── SUPABASE ─────
-const SUPA_URL = window.APP_CONFIG?.SUPABASE_URL;
-const SUPA_KEY = window.APP_CONFIG?.SUPABASE_ANON_KEY;
-if(!SUPA_URL || !SUPA_KEY){
-  throw new Error('Configuração ausente: crie o arquivo config.js com SUPABASE_URL e SUPABASE_ANON_KEY.');
-}
+// Tenta carregar do config.js externo (desenvolvimento local), depois usa o inline como fallback (GitHub Pages)
+const SUPA_URL = window.APP_CONFIG?.SUPABASE_URL || "https://nmcyzfykqymopdwavzav.supabase.co";
+const SUPA_KEY = window.APP_CONFIG?.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5tY3l6ZnlrcXltb3Bkd2F2emF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5MDI1NjQsImV4cCI6MjA5MjQ3ODU2NH0.-4XF76BfiduThJkQFF-yj9ZHWkyVHkP_FNAnz7k2yOk";
 const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
 let currentUser = null;
 
