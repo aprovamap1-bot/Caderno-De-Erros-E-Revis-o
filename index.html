@@ -8,6 +8,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; connect-src 'self' https://nmcyzfykqymopdwavzav.supabase.co; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'">
 <title>MEU CADERNO DE ERROS</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="https://placehold.co/192x192/e8c547/000000?text=CE">
+<meta name="description" content="Caderno de erros digital para concurseiros. Organize seus estudos com revisão espaçada, flashcards e cronômetro.">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -39,7 +42,17 @@
     margin-bottom:2rem;animation:pulse 2.2s ease-in-out infinite;
   }
   .splash-logo svg{width:44px;height:44px;stroke:#000;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
-  @keyframes pulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(232,197,71,0)}
+  /* ── SKELETON LOADING ── */
+  @keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+  .skeleton{background:linear-gradient(90deg,var(--surface) 25%,var(--surface2) 50%,var(--surface) 75%);background-size:800px 100%;animation:shimmer 1.4s infinite linear;border-radius:8px}
+  .skeleton-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;margin-bottom:0.75rem}
+  .skeleton-line{height:12px;margin-bottom:8px}
+  .skeleton-line.short{width:40%}
+  .skeleton-line.medium{width:65%}
+  .skeleton-line.full{width:100%}
+  .skeleton-title{height:18px;width:55%;margin-bottom:12px}
+
+  @keyframes pulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(232,197,71,0)}}
     50%{transform:scale(1.05);box-shadow:0 0 0 14px rgba(232,197,71,0)}}
 
   #splash h1{font-family:'Playfair Display',serif;font-size:clamp(2rem,7vw,3.8rem);font-weight:900;line-height:1.05;letter-spacing:-1.5px}
@@ -845,6 +858,11 @@
           Importar backup
         </button>
         <input type="file" id="importFile" accept=".json" style="display:none">
+        <!-- BOTÃO INSTALAR APP -->
+        <button id="btnInstallPWA" data-action="install-pwa" style="display:none;width:100%;margin-top:0.75rem;padding:0.65rem;border-radius:10px;border:1px solid rgba(232,197,71,0.3);background:rgba(232,197,71,0.08);color:var(--accent);font-family:'DM Sans',sans-serif;font-weight:600;font-size:0.82rem;cursor:pointer;align-items:center;justify-content:center;gap:0.5rem;transition:all 0.2s">
+          <svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M12 2v13M7 11l5 5 5-5"/><path d="M3 19h18"/></svg>
+          Instalar como App
+        </button>
         <div class="backup-version">v2.0 · MEU CADERNO DE ERROS</div>
         <div class="copyright-notice">
           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M14.83 14.83a4 4 0 1 1 0-5.66"/></svg>
@@ -1693,9 +1711,23 @@ async function authSignOut(){
 }
 
 // ───── CLOUD DATA ─────
+function showSkeletonLoading(){
+  const grid = document.getElementById('cardsGrid');
+  if(!grid) return;
+  grid.innerHTML = Array(4).fill('').map(()=>`
+    <div class="skeleton-card">
+      <div class="skeleton skeleton-title"></div>
+      <div class="skeleton skeleton-line full"></div>
+      <div class="skeleton skeleton-line medium"></div>
+      <div class="skeleton skeleton-line short"></div>
+    </div>
+  `).join('');
+}
+
 async function loadUserData(){
   if(!currentUser) return;
   const uid = currentUser.id;
+  showSkeletonLoading();
 
   const [{data:errosData},{data:foldersData},{data:materiasData},{data:notesData},{data:timerData},{data:flashData}] = await Promise.all([
     supa.from('erros').select('*').eq('user_id', uid).order('created_at'),
@@ -2776,7 +2808,10 @@ function renderMateriaFolders(){
     if(q) list = list.filter(e =>
       e.assunto.toLowerCase().includes(q) ||
       (e.banca||'').toLowerCase().includes(q) ||
-      (e.keywords||'').toLowerCase().includes(q)
+      (e.keywords||'').toLowerCase().includes(q) ||
+      (e.questao||'').toLowerCase().includes(q) ||
+      (e.obs||'').toLowerCase().includes(q) ||
+      (e.lei||'').toLowerCase().includes(q)
     );
 
     if(!list.length){
@@ -2804,7 +2839,10 @@ function renderMateriaFolders(){
       e.assunto.toLowerCase().includes(q) ||
       (e.materia||'').toLowerCase().includes(q) ||
       (e.banca||'').toLowerCase().includes(q) ||
-      (e.keywords||'').toLowerCase().includes(q)
+      (e.keywords||'').toLowerCase().includes(q) ||
+      (e.questao||'').toLowerCase().includes(q) ||
+      (e.obs||'').toLowerCase().includes(q) ||
+      (e.lei||'').toLowerCase().includes(q)
     );
     if(!list.length){
       cardsGrid.innerHTML=`<div class="empty-state">
@@ -3328,6 +3366,8 @@ document.addEventListener('click', (event)=>{
     authSignOut();
   } else if(action === 'add-folder'){
     addFolder();
+  } else if(action === 'install-pwa'){
+    installPWA();
   } else if(action === 'export-data'){
     exportData();
   } else if(action === 'open-import-file'){
@@ -3464,6 +3504,38 @@ document.getElementById('searchInput')?.addEventListener('input', ()=>{
 });
 
 document.getElementById('importFile')?.addEventListener('change', importData);
+
+// ── INSTALAR PWA ──
+let _pwaPrompt = null;
+async function installPWA(){
+  if(!_pwaPrompt) return;
+  _pwaPrompt.prompt();
+  const {outcome} = await _pwaPrompt.userChoice;
+  if(outcome === 'accepted'){
+    _pwaPrompt = null;
+    const btn = document.getElementById('btnInstallPWA');
+    if(btn) btn.style.display = 'none';
+  }
+}
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  _pwaPrompt = e;
+  const btn = document.getElementById('btnInstallPWA');
+  if(btn) btn.style.display = 'flex';
+});
+window.addEventListener('appinstalled', () => {
+  const btn = document.getElementById('btnInstallPWA');
+  if(btn) btn.style.display = 'none';
+  _pwaPrompt = null;
+  showToast('App instalado com sucesso! 🎉', 'ok');
+});
+
+// ── SERVICE WORKER (PWA) ──
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  });
+}
 
 // Bug fix: reseta o flashcard ao trocar filtro
 document.getElementById('flashFolderFilter')?.addEventListener('change', ()=>{
