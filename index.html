@@ -1801,22 +1801,17 @@ async function saveMateriasToCloud(){
 
 // ───── INIT ─────
 async function initApp(){
-  // Detecta retorno do link de recuperação de senha (type=recovery no hash da URL)
-  const hashParams = new URLSearchParams(window.location.hash.replace('#',''));
-  if(hashParams.get('type') === 'recovery'){
-    // O Supabase já logou o usuário com o token do link; aguarda a sessão ser estabelecida
-    const {data:{session}} = await supa.auth.getSession();
-    if(session){
-      // Limpa o hash da URL para não reprocessar ao recarregar
-      history.replaceState(null, '', window.location.pathname + window.location.search + window.location.hash.replace(/#.*/, ''));
+  // Escuta eventos de autenticação — detecta PASSWORD_RECOVERY quando o usuário
+  // clica no link de redefinição de senha enviado por e-mail
+  supa.auth.onAuthStateChange(async (event, session) => {
+    if(event === 'PASSWORD_RECOVERY'){
       currentUser = session.user;
       showAuthScreen();
       openForcePasswordModal();
-      return;
     }
-  }
+  });
 
-  // Check if user is already logged in
+  // Verifica se já há sessão ativa (usuário logado normalmente)
   const {data:{session}} = await supa.auth.getSession();
   if(session){
     await handlePostLogin(session.user, session.user.email || '');
