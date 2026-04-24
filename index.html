@@ -725,19 +725,11 @@
         <input class="setup-input" id="authEmail" type="email" placeholder="Seu e-mail...">
         <input class="setup-input" id="authPassword" type="password" placeholder="Sua senha..." style="margin-top:0.5rem">
         <button class="setup-btn" data-action="auth-signin">Entrar →</button>
-        <button data-action="show-auth-register" style="background:none;border:none;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:0.82rem;cursor:pointer;width:100%;text-align:center;margin-top:0.75rem;padding:0.4rem">Não tem conta? <span style="color:var(--accent)">Criar conta grátis</span></button>
-        <button data-action="auth-forgot" style="background:none;border:none;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:0.75rem;cursor:pointer;width:100%;text-align:center;margin-top:0.25rem">Esqueci minha senha</button>
+        <button data-action="auth-forgot" style="background:none;border:none;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:0.75rem;cursor:pointer;width:100%;text-align:center;margin-top:0.75rem">Esqueci minha senha</button>
+        <p style="font-size:0.72rem;color:var(--text3);text-align:center;margin-top:0.75rem;line-height:1.5">Acesso exclusivo para alunos. Adquira o produto em <a href="https://aprovamaps.com.br" style="color:var(--accent);text-decoration:none">aprovamaps.com.br</a></p>
       </div>
-      <!-- CADASTRO -->
-      <div id="authRegister" style="display:none">
-        <h2 style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900;color:var(--text);margin-bottom:0.5rem;text-align:center">Criar minha conta</h2>
-        <p style="font-size:0.85rem;color:var(--text2);margin-bottom:1.5rem;text-align:center;line-height:1.6">Seus dados ficam salvos na nuvem — acesse de qualquer dispositivo!</p>
-        <input class="setup-input" id="regName" type="text" placeholder="Seu primeiro nome...">
-        <input class="setup-input" id="regEmail" type="email" placeholder="Seu e-mail..." style="margin-top:0.5rem">
-        <input class="setup-input" id="regPassword" type="password" placeholder="Crie uma senha (mín. 6 caracteres)..." style="margin-top:0.5rem">
-        <button class="setup-btn" data-action="auth-signup" style="margin-top:0.5rem">Criar conta →</button>
-        <button data-action="show-auth-login" style="background:none;border:none;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:0.82rem;cursor:pointer;width:100%;text-align:center;margin-top:0.75rem;padding:0.4rem">Já tenho conta. <span style="color:var(--accent)">Entrar</span></button>
-      </div>
+      <!-- CADASTRO DESATIVADO: acesso somente via Kiwify -->
+      <div id="authRegister" style="display:none"></div>
     </div>
     <div id="authMsg" style="margin-top:0.75rem;font-size:0.8rem;text-align:center;color:var(--text2);min-height:1.2rem"></div>
   </div>
