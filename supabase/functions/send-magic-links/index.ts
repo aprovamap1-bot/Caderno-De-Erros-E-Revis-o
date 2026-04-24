@@ -17,6 +17,13 @@ const SERVICE_KEY = Deno.env.get("SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_S
 const BULK_SEND_SECRET = Deno.env.get("BULK_SEND_SECRET") ?? "";
 const SITE_URL = "https://aprovamap1-bot.github.io/Caderno-De-Erros-E-Revis-o";
 const FROM_EMAIL = "MEU CADERNO DE ERROS <noreply@aprovamaps.com.br>";
+const JSON_HEADERS = { "Content-Type": "application/json" } as const;
+
+type SendStatus =
+  | { email: string; status: "enviado"; id: string }
+  | { email: string; status: "erro_link"; error: string }
+  | { email: string; status: "erro_email"; error: unknown }
+  | { email: string; status: "exception"; error: string };
 
 // Lista de usuários para envio em lote
 const USERS = [
@@ -63,7 +70,7 @@ serve(async (req: Request) => {
     auth: { autoRefreshToken: false, persistSession: false }
   });
 
-  const results = [];
+  const results: SendStatus[] = [];
 
   for (const user of USERS) {
     try {
@@ -114,9 +121,12 @@ serve(async (req: Request) => {
         }),
       });
 
-      const resBody = await res.json();
+      const resBody: unknown = await res.json();
       if (res.ok) {
-        results.push({ email: user.email, status: "enviado", id: resBody.id });
+        const resendId = typeof resBody === "object" && resBody !== null && "id" in resBody
+          ? String((resBody as { id: unknown }).id)
+          : "";
+        results.push({ email: user.email, status: "enviado", id: resendId });
         console.log(`✅ E-mail enviado para ${user.email}`);
       } else {
         results.push({ email: user.email, status: "erro_email", error: resBody });
@@ -127,8 +137,5 @@ serve(async (req: Request) => {
     }
   }
 
-  return new Response(JSON.stringify({ results }, null, 2), {
-    status: 200,
-    headers: { "Content-Type": "application/json" },
-  });
+  return new Response(JSON.stringify({ results }, null, 2), { status: 200, headers: JSON_HEADERS });
 });

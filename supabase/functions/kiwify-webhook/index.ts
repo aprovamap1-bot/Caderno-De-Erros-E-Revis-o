@@ -17,6 +17,11 @@ import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const SITE_URL = "https://aprovamap1-bot.github.io/Caderno-De-Erros-E-Revis-o";
+const JSON_HEADERS = { "Content-Type": "application/json" } as const;
+
+function jsonResponse(payload: unknown, status = 200): Response {
+  return new Response(JSON.stringify(payload), { status, headers: JSON_HEADERS });
+}
 
 // ── Gera senha aleatória segura (20 chars) ──
 function generatePassword(): string {
@@ -81,8 +86,8 @@ async function sendWelcomeEmail(
   });
 
   if (!res.ok) {
-    const err = await res.json();
-    throw new Error(`Resend error: ${JSON.stringify(err)}`);
+    const errText = await res.text();
+    throw new Error(`Resend error: ${errText}`);
   }
 
   console.log("✅ E-mail enviado via Resend para:", email);
@@ -121,16 +126,13 @@ serve(async (req: Request) => {
   console.log("order_status:", orderStatus);
 
   if (orderStatus !== "paid") {
-    return new Response(
-      JSON.stringify({ ignored: true, status: orderStatus }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
+    return jsonResponse({ ignored: true, status: orderStatus });
   }
 
   // ── Extrai dados do comprador ──
   const customer = (body["Customer"] ?? body["customer"]) as Record<string, string> | undefined;
   const email = customer?.email?.trim().toLowerCase();
-  const name  = customer?.full_name?.trim() || email?.split("@")[0] || "Aluno";
+  const name = customer?.full_name?.trim() || email?.split("@")[0] || "Aluno";
 
   if (!email) {
     console.error("E-mail não encontrado no payload");
@@ -141,8 +143,8 @@ serve(async (req: Request) => {
 
   // ── Cria cliente Supabase ──
   const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-  const serviceKey  = Deno.env.get("SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-  const resendKey   = Deno.env.get("RESEND_API_KEY") ?? "";
+  const serviceKey = Deno.env.get("SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  const resendKey = Deno.env.get("RESEND_API_KEY") ?? "";
 
   if (!supabaseUrl || !serviceKey) {
     return new Response("Missing Supabase credentials", { status: 500 });
@@ -174,10 +176,7 @@ serve(async (req: Request) => {
       console.warn("Não foi possível reenviar magic link:", err);
     }
 
-    return new Response(
-      JSON.stringify({ success: true, message: "Usuário já cadastrado. Magic link reenviado.", email }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
+    return jsonResponse({ success: true, message: "Usuário já cadastrado. Magic link reenviado.", email });
   }
 
   // ── Cria o usuário ──
@@ -196,10 +195,7 @@ serve(async (req: Request) => {
 
   if (createError) {
     console.error("Erro ao criar usuário:", createError.message);
-    return new Response(
-      JSON.stringify({ success: false, error: createError.message }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
+    return jsonResponse({ success: false, error: createError.message }, 500);
   }
 
   console.log("✅ Usuário criado:", email, "ID:", newUser?.user?.id);
@@ -226,13 +222,10 @@ serve(async (req: Request) => {
     console.warn("RESEND_API_KEY não configurado — e-mail não enviado");
   }
 
-  return new Response(
-    JSON.stringify({
-      success: true,
-      message: "Usuário criado com sucesso.",
-      email,
-      userId: newUser?.user?.id,
-    }),
-    { status: 200, headers: { "Content-Type": "application/json" } }
-  );
+  return jsonResponse({
+    success: true,
+    message: "Usuário criado com sucesso.",
+    email,
+    userId: newUser?.user?.id,
+  });
 });
