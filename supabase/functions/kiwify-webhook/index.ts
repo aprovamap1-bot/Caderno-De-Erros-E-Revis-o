@@ -42,7 +42,7 @@ async function sendWelcomeEmail(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: "MEU CADERNO DE ERROS <onboarding@resend.dev>",
+      from: "MEU CADERNO DE ERROS <noreply@aprovamaps.com.br>",
       to: [email],
       subject: "Seu acesso ao Caderno de Erros está pronto! 🎉",
       html: `

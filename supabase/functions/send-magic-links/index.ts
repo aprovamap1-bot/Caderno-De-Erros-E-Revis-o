@@ -16,7 +16,7 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SERVICE_KEY = Deno.env.get("SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const BULK_SEND_SECRET = Deno.env.get("BULK_SEND_SECRET") ?? "";
 const SITE_URL = "https://aprovamap1-bot.github.io/Caderno-De-Erros-E-Revis-o";
-const FROM_EMAIL = "MEU CADERNO DE ERROS <onboarding@resend.dev>";
+const FROM_EMAIL = "MEU CADERNO DE ERROS <noreply@aprovamaps.com.br>";
 
 // Lista de usuários para envio em lote
 const USERS = [
