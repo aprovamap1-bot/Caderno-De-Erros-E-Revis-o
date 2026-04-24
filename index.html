@@ -1652,7 +1652,9 @@ async function authSignUp(){
 async function authForgotPassword(){
   const email = document.getElementById('authEmail').value.trim();
   if(!email){ setAuthMsg('Digite seu e-mail primeiro!','var(--red)'); return; }
-  const {error} = await supa.auth.resetPasswordForEmail(email);
+  const {error} = await supa.auth.resetPasswordForEmail(email, {
+    redirectTo: 'https://aprovamap1-bot.github.io/Caderno-De-Erros-E-Revis-o/'
+  });
   if(error){ setAuthMsg('Erro: '+error.message,'var(--red)'); return; }
   setAuthMsg('✅ Link de redefinição enviado para seu e-mail!','var(--green)');
 }
@@ -1678,6 +1680,10 @@ async function submitForcedPasswordChange(){
   currentUser = data.user || currentUser;
   closeForcePasswordModal();
   showToast('Senha atualizada com sucesso!','ok');
+  // Se o usuário chegou via link de recuperação, carrega o app após a troca
+  if(currentUser && !document.getElementById('appContent')?.classList.contains('active')){
+    await handlePostLogin(currentUser, currentUser.email || '');
+  }
 }
 
 async function authSignOut(){
@@ -1795,6 +1801,21 @@ async function saveMateriasToCloud(){
 
 // ───── INIT ─────
 async function initApp(){
+  // Detecta retorno do link de recuperação de senha (type=recovery no hash da URL)
+  const hashParams = new URLSearchParams(window.location.hash.replace('#',''));
+  if(hashParams.get('type') === 'recovery'){
+    // O Supabase já logou o usuário com o token do link; aguarda a sessão ser estabelecida
+    const {data:{session}} = await supa.auth.getSession();
+    if(session){
+      // Limpa o hash da URL para não reprocessar ao recarregar
+      history.replaceState(null, '', window.location.pathname + window.location.search + window.location.hash.replace(/#.*/, ''));
+      currentUser = session.user;
+      showAuthScreen();
+      openForcePasswordModal();
+      return;
+    }
+  }
+
   // Check if user is already logged in
   const {data:{session}} = await supa.auth.getSession();
   if(session){
