@@ -4,8 +4,8 @@
   "description": "Caderno de erros digital para concurseiros — organize seus estudos com revisão espaçada.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0f0e0c",
-  "theme_color": "#e8c547",
+  "background_color": "#f7f4ee",
+  "theme_color": "#f7f4ee",
   "orientation": "portrait-primary",
   "icons": [
     {

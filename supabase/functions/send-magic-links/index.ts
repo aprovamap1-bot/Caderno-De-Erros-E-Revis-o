@@ -99,23 +99,25 @@ serve(async (req: Request) => {
           to: [user.email],
           subject: "Seu acesso ao Caderno de Erros está pronto! 🎉",
           html: `
-            <div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#0f0e0c;color:#f0ece4;padding:2rem;border-radius:12px">
-              <h2 style="font-size:1.6rem;margin-bottom:0.5rem">Olá, ${user.name}! 👋</h2>
-              <p style="color:#9c9789;margin-bottom:1.5rem">
-                Sua compra foi confirmada e sua conta no <strong style="color:#e8c547">MEU CADERNO DE ERROS</strong> foi criada com sucesso!
-              </p>
-              <p style="color:#9c9789;margin-bottom:1.5rem">
-                Clique no botão abaixo para acessar seu caderno. Ao entrar pela primeira vez, você poderá definir sua senha.
-              </p>
-              <div style="text-align:center;margin:2rem 0">
-                <a href="${magicLink}"
-                   style="background:#e8c547;color:#000;padding:14px 32px;border-radius:50px;text-decoration:none;font-weight:700;font-size:1rem;display:inline-block">
-                  Acessar meu Caderno →
-                </a>
+            <div style="font-family:sans-serif;max-width:560px;margin:0 auto;background:#f7f4ee;color:#2c2923;padding:2rem;border-radius:16px">
+              <div style="background:#fffdf8;border:1px solid #ddd3c3;border-radius:14px;padding:2rem;box-shadow:0 10px 30px rgba(77,62,38,0.10)">
+                <h2 style="font-size:1.6rem;margin:0 0 0.5rem;color:#2c2923">Olá, ${user.name}! 👋</h2>
+                <p style="color:#5f594f;line-height:1.7;margin:0 0 1.5rem">
+                  Sua compra foi confirmada e sua conta no <strong style="color:#b98510">MEU CADERNO DE ERROS</strong> foi criada com sucesso!
+                </p>
+                <p style="color:#5f594f;line-height:1.7;margin:0 0 1.5rem">
+                  Clique no botão abaixo para acessar seu caderno. Ao entrar pela primeira vez, você poderá definir sua senha.
+                </p>
+                <div style="text-align:center;margin:2rem 0">
+                  <a href="${magicLink}"
+                     style="background:#b98510;color:#000;padding:14px 32px;border-radius:50px;text-decoration:none;font-weight:700;font-size:1rem;display:inline-block">
+                    Acessar meu Caderno →
+                  </a>
+                </div>
+                <p style="color:#8a8173;font-size:0.78rem;text-align:center;margin:0">
+                  Este link expira em 24 horas. Se não solicitou este acesso, ignore este e-mail.
+                </p>
               </div>
-              <p style="color:#6b6760;font-size:0.78rem;text-align:center">
-                Este link expira em 24 horas. Se não solicitou este acesso, ignore este e-mail.
-              </p>
             </div>
           `,
         }),

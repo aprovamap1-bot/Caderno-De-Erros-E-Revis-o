@@ -51,35 +51,37 @@ async function sendWelcomeEmail(
       to: [email],
       subject: "Seu acesso ao Caderno de Erros está pronto! 🎉",
       html: `
-        <div style="font-family:sans-serif;max-width:520px;margin:0 auto;background:#0f0e0c;color:#f0ece4;padding:2rem;border-radius:12px">
-          <div style="text-align:center;margin-bottom:1.5rem">
-            <div style="width:72px;height:72px;background:#e8c547;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;margin-bottom:1rem">
-              <span style="font-size:2rem">📓</span>
+        <div style="font-family:sans-serif;max-width:560px;margin:0 auto;background:#f7f4ee;color:#2c2923;padding:2rem;border-radius:16px">
+          <div style="background:#fffdf8;border:1px solid #ddd3c3;border-radius:14px;padding:2rem;box-shadow:0 10px 30px rgba(77,62,38,0.10)">
+            <div style="text-align:center;margin-bottom:1.5rem">
+              <div style="width:72px;height:72px;background:#b98510;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;margin-bottom:1rem">
+                <span style="font-size:2rem">📓</span>
+              </div>
+              <h1 style="font-size:1.6rem;margin:0;color:#2c2923">MEU CADERNO DE ERROS</h1>
             </div>
-            <h1 style="font-size:1.6rem;margin:0;color:#f0ece4">MEU CADERNO DE ERROS</h1>
+
+            <h2 style="font-size:1.2rem;margin:0 0 0.5rem;color:#b98510">Olá, ${name}! 🎉</h2>
+            <p style="color:#5f594f;line-height:1.7;margin:0 0 1.5rem">
+              Sua compra foi confirmada e sua conta foi criada com sucesso!
+              Clique no botão abaixo para acessar seu Caderno de Erros.
+            </p>
+
+            <div style="background:#f0ebe2;border:1px solid #ddd3c3;border-radius:12px;padding:1.5rem;margin-bottom:1.5rem">
+              <p style="color:#5f594f;font-size:0.85rem;margin:0">Ao clicar no link você será redirecionado para o Caderno. Na primeira vez, defina sua senha de acesso.</p>
+            </div>
+
+            <div style="text-align:center;margin:2rem 0">
+              <a href="${magicLink}"
+                 style="background:#b98510;color:#000;padding:14px 36px;border-radius:50px;text-decoration:none;font-weight:700;font-size:1rem;display:inline-block">
+                Acessar meu Caderno →
+              </a>
+            </div>
+
+            <hr style="border:none;border-top:1px solid #ddd3c3;margin:1.5rem 0">
+            <p style="color:#8a8173;font-size:0.75rem;text-align:center;margin:0">
+              Este link expira em 24 horas. Se não realizou esta compra, ignore este e-mail.
+            </p>
           </div>
-
-          <h2 style="font-size:1.2rem;margin-bottom:0.5rem;color:#e8c547">Olá, ${name}! 🎉</h2>
-          <p style="color:#9c9789;line-height:1.7;margin-bottom:1.5rem">
-            Sua compra foi confirmada e sua conta foi criada com sucesso!
-            Clique no botão abaixo para acessar seu Caderno de Erros.
-          </p>
-
-          <div style="background:#1a1916;border:1px solid #2e2c28;border-radius:12px;padding:1.5rem;margin-bottom:1.5rem">
-            <p style="color:#9c9789;font-size:0.85rem;margin:0 0 0.5rem 0">Ao clicar no link você será redirecionado para o Caderno. Na primeira vez, defina sua senha de acesso.</p>
-          </div>
-
-          <div style="text-align:center;margin:2rem 0">
-            <a href="${magicLink}"
-               style="background:#e8c547;color:#000;padding:14px 36px;border-radius:50px;text-decoration:none;font-weight:700;font-size:1rem;display:inline-block">
-              Acessar meu Caderno →
-            </a>
-          </div>
-
-          <hr style="border:none;border-top:1px solid #2e2c28;margin:1.5rem 0">
-          <p style="color:#6b6760;font-size:0.75rem;text-align:center;margin:0">
-            Este link expira em 24 horas. Se não realizou esta compra, ignore este e-mail.
-          </p>
         </div>
       `,
     }),

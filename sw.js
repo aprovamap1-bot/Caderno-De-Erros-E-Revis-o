@@ -3,7 +3,7 @@
 //  Cache estático para funcionamento offline básico
 // ═══════════════════════════════════════════════════════════
 
-const CACHE_NAME = 'caderno-v2';
+const CACHE_NAME = 'caderno-v3';
 const STATIC_ASSETS = [
   '/manifest.json',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
