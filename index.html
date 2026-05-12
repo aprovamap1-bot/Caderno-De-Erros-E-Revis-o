@@ -208,7 +208,7 @@
   .card-tags{display:flex;flex-wrap:wrap;gap:0.32rem;margin-bottom:0.62rem}
   .tag{font-size:0.66rem;padding:0.16rem 0.5rem;border-radius:50px;background:var(--surface2);color:var(--text2)}
   .tag.lei{background:rgba(91,143,168,0.1);color:var(--accent3)}
-  .card-onde{font-size:0.76rem;color:var(--text2);margin-bottom:0.62rem;padding:0.48rem 0.62rem;background:rgba(192,57,43,0.07);border-left:2px solid var(--red);border-radius:0 6px 6px 0}
+  .card-onde{font-size:0.76rem;color:var(--text2);margin-bottom:0.62rem;padding:0.48rem 0.62rem;background:rgba(192,57,43,0.07);border-left:2px solid var(--red);border-radius:0 6px 6px 0;white-space:pre-wrap}
   .card-onde strong{color:var(--text);display:block;margin-bottom:0.12rem;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.5px}
   .card-footer{display:flex;align-items:center;gap:0.38rem;padding-top:0.62rem;border-top:1px solid var(--border);flex-wrap:wrap}
   .diff-badge{font-size:0.65rem;font-weight:700;padding:0.18rem 0.55rem;border-radius:50px;display:flex;align-items:center;gap:0.28rem}
@@ -340,6 +340,7 @@
   .rich-content p,.rich-content div{margin:0 0 0.45rem}
   .rich-content p:last-child,.rich-content div:last-child{margin-bottom:0}
   .rich-content ul,.rich-content ol{margin:0.25rem 0 0.55rem 1.25rem;padding:0}
+  .rich-content br{line-height:1.8}
   .rich-content mark{background:#fff1a8;color:#17140f;padding:0 0.12rem;border-radius:3px}
   .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.62rem;margin-bottom:0.88rem}
   .keywords{display:flex;flex-wrap:wrap;gap:0.32rem}
@@ -2207,23 +2208,65 @@ function sanitizeRichHtml(html){
   template.content.childNodes.forEach(node=>out.appendChild(cleanNode(node)));
   return out.innerHTML;
 }
+function hasVisibleSibling(node, direction){
+  let sibling = node[direction];
+  while(sibling){
+    if(sibling.nodeType===Node.TEXT_NODE && sibling.textContent.trim()) return true;
+    if(sibling.nodeType===Node.ELEMENT_NODE){
+      if(sibling.tagName.toLowerCase()==='br') return false;
+      return true;
+    }
+    sibling = sibling[direction];
+  }
+  return false;
+}
+function convertTextNewlinesToBreaks(root){
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const textNodes = [];
+  while(walker.nextNode()) textNodes.push(walker.currentNode);
+  textNodes.forEach(node=>{
+    if(!/[\r\n]/.test(node.textContent||'')) return;
+    const frag = document.createDocumentFragment();
+    String(node.textContent||'').split(/\r\n|\r|\n/).forEach((part, idx)=>{
+      if(idx>0) frag.appendChild(document.createElement('br'));
+      if(part) frag.appendChild(document.createTextNode(part));
+    });
+    node.parentNode.replaceChild(frag, node);
+  });
+}
+function normalizeRichHtmlLineBreaks(html){
+  const root=document.createElement('div');
+  root.innerHTML=sanitizeRichHtml(html);
+  root.querySelectorAll('div,p').forEach(block=>{
+    if(!root.contains(block)) return;
+    const frag=document.createDocumentFragment();
+    if(hasVisibleSibling(block,'previousSibling')) frag.appendChild(document.createElement('br'));
+    while(block.firstChild) frag.appendChild(block.firstChild);
+    if(hasVisibleSibling(block,'nextSibling')) frag.appendChild(document.createElement('br'));
+    block.replaceWith(frag);
+  });
+  convertTextNewlinesToBreaks(root);
+  return root.innerHTML.replace(/(<br\s*\/?>\s*){3,}/gi,'<br><br>');
+}
 function looksLikeHtml(value){return /<\/?[a-z][\s\S]*>/i.test(String(value||''));}
 function plainToRichHtml(value){return esc(value||'').replace(/\r\n|\r|\n/g,'<br>');}
 function renderRichText(value){
   const raw=String(value||'');
   if(!raw) return '';
-  return looksLikeHtml(raw) ? sanitizeRichHtml(raw) : plainToRichHtml(raw);
+  return looksLikeHtml(raw) ? normalizeRichHtmlLineBreaks(raw) : plainToRichHtml(raw);
 }
 function richTextToPlain(value){
   const el=document.createElement('div');
   el.innerHTML=renderRichText(value);
-  return el.textContent||'';
+  el.querySelectorAll('br').forEach(br=>br.parentNode.replaceChild(document.createTextNode('\n'), br));
+  el.querySelectorAll('li').forEach(li=>li.appendChild(document.createTextNode('\n')));
+  return (el.textContent||'').replace(/\n{3,}/g,'\n\n').trim();
 }
 function getFieldValue(id){
   const el=document.getElementById(id);
   if(!el) return '';
   if(el.getAttribute('data-rich-editor')==='1'){
-    const html=sanitizeRichHtml(el.innerHTML||'').trim();
+    const html=normalizeRichHtmlLineBreaks(el.innerHTML||'').trim();
     const probe=document.createElement('div');
     probe.innerHTML=html.replace(/<br\s*\/?>/gi,'');
     return probe.textContent.trim() ? html : '';
@@ -2248,7 +2291,7 @@ function runRichCommand(targetId,command){
   }else{
     document.execCommand(command, false, null);
   }
-  editor.innerHTML=sanitizeRichHtml(editor.innerHTML);
+  editor.innerHTML=normalizeRichHtmlLineBreaks(editor.innerHTML);
 }
 function renderFolders(){
   const list=document.getElementById('folderList');
@@ -3894,7 +3937,17 @@ document.addEventListener('paste', (event)=>{
   if(!editor) return;
   event.preventDefault();
   const text = event.clipboardData?.getData('text/plain') || '';
-  document.execCommand('insertText', false, text);
+  document.execCommand('insertHTML', false, plainToRichHtml(text));
+});
+
+document.addEventListener('keydown', (event)=>{
+  const editor = event.target.closest?.('[data-rich-editor="1"]');
+  if(!editor || event.key!=='Enter') return;
+  const sel = window.getSelection();
+  const anchor = sel?.anchorNode?.nodeType===Node.ELEMENT_NODE ? sel.anchorNode : sel?.anchorNode?.parentElement;
+  if(anchor?.closest?.('li')) return;
+  event.preventDefault();
+  document.execCommand('insertLineBreak', false, null);
 });
 
 document.addEventListener('focusout', async (event)=>{
