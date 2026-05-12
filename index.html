@@ -1969,11 +1969,58 @@ async function deleteErrorFromCloud(id){
 async function saveFoldersToCloud(){
   if(MOCK_MODE || !currentUser) return;
   const uid = currentUser.id;
-  const {error:deleteError} = await supa.from('cadernos').delete().eq('user_id', uid);
-  if(deleteError) throw deleteError;
-  if(folders.length){
-    const {error:insertError} = await supa.from('cadernos').insert(folders.map(nome=>({user_id:uid, nome})));
+  const desired = [...new Set(folders.map(nome=>String(nome||'').trim()).filter(Boolean))];
+  folders = desired;
+
+  const {data:existingRows, error:selectError} = await supa
+    .from('cadernos')
+    .select('nome')
+    .eq('user_id', uid);
+  if(selectError) throw selectError;
+
+  const existing = new Set((existingRows||[]).map(r=>r.nome));
+  const toInsert = desired.filter(nome=>!existing.has(nome));
+
+  if(toInsert.length){
+    const {error:insertError} = await supa
+      .from('cadernos')
+      .insert(toInsert.map(nome=>({user_id:uid, nome})));
     if(insertError) throw insertError;
+  }
+
+  const {data:verifyRows, error:verifyError} = await supa
+    .from('cadernos')
+    .select('nome')
+    .eq('user_id', uid);
+  if(verifyError) throw verifyError;
+
+  const persisted = new Set((verifyRows||[]).map(r=>r.nome));
+  const missing = desired.filter(nome=>!persisted.has(nome));
+  if(missing.length){
+    throw new Error('Caderno não persistido no Supabase: '+missing.join(', '));
+  }
+  folders = desired.filter(nome=>persisted.has(nome)).sort((a,b)=>a.localeCompare(b,'pt'));
+}
+
+async function deleteFolderFromCloudByName(name){
+  if(MOCK_MODE || !currentUser || !name) return;
+  const uid = currentUser.id;
+  const {error:deleteError} = await supa
+    .from('cadernos')
+    .delete()
+    .eq('user_id', uid)
+    .eq('nome', name);
+  if(deleteError) throw deleteError;
+
+  const {data:remainingRows, error:verifyError} = await supa
+    .from('cadernos')
+    .select('id')
+    .eq('user_id', uid)
+    .eq('nome', name)
+    .limit(1);
+  if(verifyError) throw verifyError;
+  if((remainingRows||[]).length){
+    throw new Error('Caderno antigo ainda existe no Supabase: '+name);
   }
 }
 
@@ -2241,17 +2288,28 @@ async function persistFolders(){
 async function addFolder(){
   const name=prompt('Nome do novo caderno:','');
   if(name&&name.trim()){
+    const previousFolders = [...folders];
     const clean=name.trim();
     if(folders.includes(clean)){showToast('Esse caderno já existe.','warn');return;}
     folders.push(clean);
     folders.sort((a,b)=>a.localeCompare(b,'pt'));
     renderFolders();
-    if(await persistFolders()) showToast('Caderno criado e salvo!','ok');
+    const saved = await persistFolders();
+    if(saved){
+      renderFolders();
+      showToast('Caderno criado e salvo!','ok');
+    }else{
+      folders = previousFolders;
+      renderFolders();
+    }
   }
 }
 async function renameFolder(i,newName){
   if(!newName.trim()||newName===folders[i])return;
   if(folders.some((f,idx)=>idx!==i && f===newName.trim())){showToast('Já existe um caderno com esse nome.','warn');renderFolders();return;}
+  const previousFolders = [...folders];
+  const previousErrors = errors.map(e=>({...e}));
+  const previousFolder = currentFolder;
   const old=folders[i], clean=newName.trim();
   folders[i]=clean;
   if(currentFolder===old){
@@ -2260,10 +2318,24 @@ async function renameFolder(i,newName){
   }
   errors.forEach(e=>{if(e.folder===old)e.folder=clean;});
   renderFolders(); renderCards();
-  await persistFolders();
+  const saved = await persistFolders();
+  if(!saved){
+    folders = previousFolders;
+    errors = previousErrors;
+    currentFolder = previousFolder;
+    document.getElementById('currentFolderTitle').textContent=currentFolder==='all'?'Todos os Erros':currentFolder;
+    renderFolders(); renderCards();
+    return;
+  }
   const changedErrors = errors.filter(e=>e.folder===clean);
   for(const entry of changedErrors){
     try{await saveErrorToCloud(entry);}catch(err){console.error(err);}
+  }
+  try{
+    await deleteFolderFromCloudByName(old);
+  }catch(err){
+    console.error(err);
+    showToast('Caderno renomeado, mas o nome antigo pode reaparecer. Atualize e tente excluir se necessário.','warn');
   }
 }
 async function deleteFolder(i){
@@ -2273,10 +2345,33 @@ async function deleteFolder(i){
     : `Excluir o caderno "${name}"?`;
   const ok = await showConfirm('Excluir caderno', msg, 'Excluir');
   if(!ok) return;
+  const previousFolders = [...folders];
+  const previousErrors = errors.map(e=>({...e}));
+  const previousFolder = currentFolder;
   if(currentFolder===name){currentFolder='all';document.getElementById('currentFolderTitle').textContent='Todos os Erros';}
   errors.forEach(e=>{if(e.folder===name)e.folder='_sem_caderno_';});
   folders.splice(i,1); renderFolders(); renderCards();
   const saved = await persistFolders();
+  if(!saved){
+    folders = previousFolders;
+    errors = previousErrors;
+    currentFolder = previousFolder;
+    document.getElementById('currentFolderTitle').textContent=currentFolder==='all'?'Todos os Erros':currentFolder;
+    renderFolders(); renderCards();
+    return;
+  }
+  try{
+    await deleteFolderFromCloudByName(name);
+  }catch(err){
+    console.error(err);
+    folders = previousFolders;
+    errors = previousErrors;
+    currentFolder = previousFolder;
+    document.getElementById('currentFolderTitle').textContent=currentFolder==='all'?'Todos os Erros':currentFolder;
+    renderFolders(); renderCards();
+    showToast('Não consegui excluir o caderno na nuvem. Tente novamente.','warn');
+    return;
+  }
   const changedErrors = errors.filter(e=>e.folder==='_sem_caderno_');
   for(const entry of changedErrors){
     try{await saveErrorToCloud(entry);}catch(err){console.error(err);}
@@ -3040,12 +3135,20 @@ function mobileFolderSelect(f){ setFolder(f); closeMobileDrawer(); }
 async function addFolderMobile(){
   const name = prompt('Nome do novo caderno:','');
   if(name&&name.trim()){
+    const previousFolders = [...folders];
     const clean=name.trim();
     if(folders.includes(clean)){showToast('Esse caderno já existe.','warn');return;}
     folders.push(clean);
     folders.sort((a,b)=>a.localeCompare(b,'pt'));
     renderFolders();renderMobileFolders();
-    if(await persistFolders()) showToast('Caderno criado e salvo!','ok');
+    const saved = await persistFolders();
+    if(saved){
+      renderFolders();renderMobileFolders();
+      showToast('Caderno criado e salvo!','ok');
+    }else{
+      folders = previousFolders;
+      renderFolders();renderMobileFolders();
+    }
   }
 }
 
