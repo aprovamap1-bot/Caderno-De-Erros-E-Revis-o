@@ -302,6 +302,15 @@
   .form-control{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.62rem 0.88rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.87rem;transition:border-color 0.2s;outline:none;width:100%}
   .form-control:focus{border-color:var(--accent)}
   textarea.form-control{resize:vertical;min-height:75px}
+  .rich-field{display:flex;flex-direction:column;gap:0}
+  .rich-toolbar{background:var(--surface2);border:1px solid var(--border);border-bottom:none;border-radius:8px 8px 0 0;padding:0.35rem;display:flex;align-items:center;gap:0.28rem;flex-wrap:wrap}
+  .rich-toolbar-btn{background:rgba(255,255,255,0.03);border:1px solid var(--border);color:var(--text2);border-radius:6px;min-width:30px;height:28px;padding:0 0.45rem;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.75rem;font-weight:800;display:inline-flex;align-items:center;justify-content:center;transition:all 0.15s}
+  .rich-toolbar-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(232,197,71,0.08)}
+  .rich-toolbar-btn.highlight{background:rgba(232,197,71,0.12);color:var(--accent)}
+  .rich-toolbar-btn.clear{font-weight:700;font-size:0.68rem}
+  .rich-editor{min-height:82px;resize:vertical;overflow:auto;border-radius:0 0 8px 8px;white-space:pre-wrap}
+  .rich-editor:empty:before{content:attr(data-placeholder);color:var(--text3);pointer-events:none}
+  .rich-editor mark{background:#fff1a8;color:#17140f;padding:0 0.12rem;border-radius:3px}
   select.form-control{cursor:pointer}
   .form-control::placeholder{color:var(--text3)}
   .form-hint{font-size:0.66rem;color:var(--text3)}
@@ -327,6 +336,11 @@
   .detail-label{font-size:0.62rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:0.32rem;display:flex;align-items:center;gap:0.3rem}
   .detail-label svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
   .detail-value{font-size:0.87rem;line-height:1.6}
+  .rich-content{white-space:pre-wrap;overflow-wrap:anywhere}
+  .rich-content p,.rich-content div{margin:0 0 0.45rem}
+  .rich-content p:last-child,.rich-content div:last-child{margin-bottom:0}
+  .rich-content ul,.rich-content ol{margin:0.25rem 0 0.55rem 1.25rem;padding:0}
+  .rich-content mark{background:#fff1a8;color:#17140f;padding:0 0.12rem;border-radius:3px}
   .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.62rem;margin-bottom:0.88rem}
   .keywords{display:flex;flex-wrap:wrap;gap:0.32rem}
   .keyword{background:rgba(232,197,71,0.08);color:var(--accent);font-size:0.7rem;padding:0.2rem 0.52rem;border-radius:50px;font-family:'DM Mono',monospace}
@@ -394,7 +408,9 @@
   .flash-front,.flash-back{position:absolute;inset:0;padding:2rem;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;backface-visibility:hidden;border-radius:16px}
   .flash-back{transform:rotateY(180deg);background:var(--surface)}
   .flash-label{font-size:0.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:1rem}
-  .flash-content{font-size:1rem;color:var(--text);line-height:1.6;font-weight:500}
+  .flash-content{font-size:1rem;color:var(--text);line-height:1.6;font-weight:500;white-space:pre-wrap;overflow-wrap:anywhere}
+  .flash-content ul,.flash-content ol{display:inline-block;text-align:left;margin:0.25rem 0 0.55rem 1.25rem;padding:0}
+  .flash-content mark{background:#fff1a8;color:#17140f;padding:0 0.12rem;border-radius:3px}
   .flash-hint{font-size:0.72rem;color:var(--text3);margin-top:1.5rem}
   .flash-actions{display:flex;gap:1rem;justify-content:center;margin-bottom:1rem}
   .flash-btn{padding:0.75rem 2rem;border-radius:10px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:700;font-size:0.9rem;display:flex;align-items:center;gap:0.5rem;transition:all 0.2s}
@@ -1334,7 +1350,17 @@
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             Onde Errei
           </label>
-          <textarea class="form-control" id="fOnde" placeholder="Descreva o ponto exato do erro, o que te confundiu..."></textarea>
+          <div class="rich-field">
+            <div class="rich-toolbar" data-rich-toolbar="fOnde">
+              <button type="button" class="rich-toolbar-btn" data-action="rich-command" data-target="fOnde" data-command="bold" title="Negrito">B</button>
+              <button type="button" class="rich-toolbar-btn" data-action="rich-command" data-target="fOnde" data-command="italic" title="Itálico"><em>I</em></button>
+              <button type="button" class="rich-toolbar-btn" data-action="rich-command" data-target="fOnde" data-command="underline" title="Sublinhado"><u>U</u></button>
+              <button type="button" class="rich-toolbar-btn highlight" data-action="rich-command" data-target="fOnde" data-command="highlight" title="Destacar">Destacar</button>
+              <button type="button" class="rich-toolbar-btn" data-action="rich-command" data-target="fOnde" data-command="orderedList" title="Lista numerada">1.</button>
+              <button type="button" class="rich-toolbar-btn clear" data-action="rich-command" data-target="fOnde" data-command="removeFormat" title="Limpar formatação">Limpar</button>
+            </div>
+            <div class="form-control rich-editor" id="fOnde" contenteditable="true" data-rich-editor="1" data-placeholder="Descreva o ponto exato do erro, o que te confundiu..."></div>
+          </div>
         </div>
 
         <div class="form-group full">
@@ -1381,7 +1407,17 @@
             <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             Enunciado / Questão
           </label>
-          <textarea class="form-control" id="fQuestao" placeholder="Cole o enunciado da questão aqui..."></textarea>
+          <div class="rich-field">
+            <div class="rich-toolbar" data-rich-toolbar="fQuestao">
+              <button type="button" class="rich-toolbar-btn" data-action="rich-command" data-target="fQuestao" data-command="bold" title="Negrito">B</button>
+              <button type="button" class="rich-toolbar-btn" data-action="rich-command" data-target="fQuestao" data-command="italic" title="Itálico"><em>I</em></button>
+              <button type="button" class="rich-toolbar-btn" data-action="rich-command" data-target="fQuestao" data-command="underline" title="Sublinhado"><u>U</u></button>
+              <button type="button" class="rich-toolbar-btn highlight" data-action="rich-command" data-target="fQuestao" data-command="highlight" title="Destacar">Destacar</button>
+              <button type="button" class="rich-toolbar-btn" data-action="rich-command" data-target="fQuestao" data-command="orderedList" title="Lista numerada">1.</button>
+              <button type="button" class="rich-toolbar-btn clear" data-action="rich-command" data-target="fQuestao" data-command="removeFormat" title="Limpar formatação">Limpar</button>
+            </div>
+            <div class="form-control rich-editor" id="fQuestao" contenteditable="true" data-rich-editor="1" data-placeholder="Cole o enunciado da questão aqui..."></div>
+          </div>
         </div>
 
         <div class="form-group full">
@@ -1389,7 +1425,17 @@
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
             Observações / Gabarito comentado
           </label>
-          <textarea class="form-control" id="fObs" placeholder="Escreva a explicação, regra, macete..."></textarea>
+          <div class="rich-field">
+            <div class="rich-toolbar" data-rich-toolbar="fObs">
+              <button type="button" class="rich-toolbar-btn" data-action="rich-command" data-target="fObs" data-command="bold" title="Negrito">B</button>
+              <button type="button" class="rich-toolbar-btn" data-action="rich-command" data-target="fObs" data-command="italic" title="Itálico"><em>I</em></button>
+              <button type="button" class="rich-toolbar-btn" data-action="rich-command" data-target="fObs" data-command="underline" title="Sublinhado"><u>U</u></button>
+              <button type="button" class="rich-toolbar-btn highlight" data-action="rich-command" data-target="fObs" data-command="highlight" title="Destacar">Destacar</button>
+              <button type="button" class="rich-toolbar-btn" data-action="rich-command" data-target="fObs" data-command="orderedList" title="Lista numerada">1.</button>
+              <button type="button" class="rich-toolbar-btn clear" data-action="rich-command" data-target="fObs" data-command="removeFormat" title="Limpar formatação">Limpar</button>
+            </div>
+            <div class="form-control rich-editor" id="fObs" contenteditable="true" data-rich-editor="1" data-placeholder="Escreva a explicação, regra, macete..."></div>
+          </div>
         </div>
 
         <div class="form-group">
@@ -1538,6 +1584,10 @@
 const SUPA_URL = window.APP_CONFIG?.SUPABASE_URL || "https://nmcyzfykqymopdwavzav.supabase.co";
 const SUPA_KEY = window.APP_CONFIG?.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5tY3l6ZnlrcXltb3Bkd2F2emF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5MDI1NjQsImV4cCI6MjA5MjQ3ODU2NH0.-4XF76BfiduThJkQFF-yj9ZHWkyVHkP_FNAnz7k2yOk";
 const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+const MOCK_PARAM = new URLSearchParams(location.search).get('mock');
+const MOCK_MODE = MOCK_PARAM === '1' || MOCK_PARAM === 'true' || MOCK_PARAM === 'reset';
+const MOCK_RESET = MOCK_PARAM === 'reset';
+const MOCK_STORAGE_KEY = 'cadErros_mock_v1';
 let currentUser = null;
 
 // ───── STATE ─────
@@ -1548,6 +1598,108 @@ let currentFolder  = 'all';
 let currentDiff    = '';
 let editingId      = null;
 let detailId       = null;
+
+function getMockSeedData(){
+  const now = Date.now();
+  const daysAgo = days => now - days * 86400000;
+  return {
+    errors: [
+      {
+        id:'mock-erro-001',
+        materia:'Português',
+        banca:'CESPE',
+        assunto:'Crase em locuções',
+        onde:'<b>Confundi</b> crase obrigatória com crase facultativa.<br><mark>Revisar locuções femininas.</mark>',
+        dificuldade:'dificil',
+        keywords:'crase, locução feminina, português',
+        questao:'Assinale a alternativa em que o uso da crase está correto.',
+        obs:'<ol><li>Antes de palavra feminina com artigo: <b>à</b>.</li><li>Em locuções femininas: <u>à medida que</u>, <u>às vezes</u>.</li></ol>',
+        lei:'',
+        artigo:'',
+        folder:'Português',
+        dataQuestao:'2026-05-01',
+        createdAt:daysAgo(2),
+        lastRevision:null,
+        revStage:0
+      },
+      {
+        id:'mock-erro-002',
+        materia:'Direito Administrativo',
+        banca:'FCC',
+        assunto:'Atos administrativos',
+        onde:'Errei a diferença entre <b>anulação</b> e <b>revogação</b>.',
+        dificuldade:'medio',
+        keywords:'atos administrativos, anulação, revogação',
+        questao:'Explique quando a Administração pode anular ou revogar um ato administrativo.',
+        obs:'Anulação: vício de legalidade.<br>Revogação: conveniência e oportunidade.<br><mark>Judiciário pode anular, mas não revogar ato administrativo.</mark>',
+        lei:'Lei nº 9.784/1999',
+        artigo:'Art. 53',
+        folder:'Direito Administrativo',
+        dataQuestao:'2026-05-03',
+        createdAt:daysAgo(8),
+        lastRevision:daysAgo(1),
+        revStage:1
+      },
+      {
+        id:'mock-erro-003',
+        materia:'Raciocínio Lógico',
+        banca:'VUNESP',
+        assunto:'Proposição composta',
+        onde:'Troquei o valor lógico do conectivo <i>se... então</i>.',
+        dificuldade:'facil',
+        keywords:'lógica, condicional, tabela verdade',
+        questao:'Se P é verdadeiro e Q é falso, qual o valor de P -> Q?',
+        obs:'A condicional só é falsa quando o antecedente é verdadeiro e o consequente é falso.',
+        lei:'',
+        artigo:'',
+        folder:'Raciocínio Lógico',
+        dataQuestao:'2026-05-06',
+        createdAt:daysAgo(15),
+        lastRevision:null,
+        revStage:0
+      }
+    ],
+    folders:['Português','Direito Administrativo','Raciocínio Lógico','Teste Mock'],
+    customMaterias:['Ética'],
+    notes:[
+      {id:'mock-note-001',title:'Checklist de revisão',body:'Testar criação de caderno, edição com negrito e flashcards.',tag:'revisar',createdAt:daysAgo(1)}
+    ],
+    timerSessions:[
+      {id:'mock-session-001',seconds:1500,duration:'00:25:00',date:'12 de mai. de 2026',time:'08:30',ts:daysAgo(1)}
+    ],
+    flashResults:[
+      {date:'12/05/2026',ts:daysAgo(1),correct:2,wrong:1,total:3}
+    ]
+  };
+}
+
+function applyDataSnapshot(data){
+  errors = Array.isArray(data?.errors) ? data.errors : [];
+  folders = Array.isArray(data?.folders) ? data.folders : [];
+  customMaterias = Array.isArray(data?.customMaterias) ? data.customMaterias : [];
+  notes = Array.isArray(data?.notes) ? data.notes : [];
+  timerSessions = Array.isArray(data?.timerSessions) ? data.timerSessions : [];
+  flashResults = Array.isArray(data?.flashResults) ? data.flashResults : [];
+}
+
+function persistMockData(){
+  if(!MOCK_MODE) return;
+  localStorage.setItem(MOCK_STORAGE_KEY, JSON.stringify({
+    errors, folders, customMaterias, notes, timerSessions, flashResults,
+    savedAt:new Date().toISOString()
+  }));
+}
+
+function loadMockData(){
+  if(!MOCK_RESET){
+    try{
+      const saved = JSON.parse(localStorage.getItem(MOCK_STORAGE_KEY) || 'null');
+      if(saved){ applyDataSnapshot(saved); return; }
+    }catch(err){ console.warn('Mock data reset:', err); }
+  }
+  applyDataSnapshot(getMockSeedData());
+  persistMockData();
+}
 
 // ───── CONFIRM MODAL (substitui confirm() nativo) ─────
 function showConfirm(title, msg, okLabel='Confirmar', danger=true){
@@ -1700,6 +1852,12 @@ async function submitForcedPasswordChange(){
 }
 
 async function authSignOut(){
+  if(MOCK_MODE){
+    const ok = await showConfirm('Sair do modo teste','Deseja sair do painel de testes? Os dados mock ficam separados dos dados reais.','Sair', false);
+    if(!ok) return;
+    location.href = location.pathname;
+    return;
+  }
   const ok = await showConfirm('Sair do painel','Tem certeza que deseja sair? Seus dados estão salvos na nuvem.','Sair', false);
   if(!ok) return;
   await supa.auth.signOut();
@@ -1770,6 +1928,10 @@ async function loadUserData(){
 }
 
 async function saveData(){
+  if(MOCK_MODE){
+    persistMockData();
+    updateStorageMeter(); return;
+  }
   if(!currentUser){ 
     // fallback localStorage
     localStorage.setItem('cadErros_v2', JSON.stringify(errors));
@@ -1782,7 +1944,7 @@ async function saveData(){
 }
 
 async function saveErrorToCloud(entry){
-  if(!currentUser) return;
+  if(MOCK_MODE || !currentUser) return;
   const uid = currentUser.id;
   const row = {
     id: entry.id, user_id: uid,
@@ -1799,13 +1961,13 @@ async function saveErrorToCloud(entry){
 }
 
 async function deleteErrorFromCloud(id){
-  if(!currentUser) return;
+  if(MOCK_MODE || !currentUser) return;
   const {error} = await supa.from('erros').delete().eq('id', id).eq('user_id', currentUser.id);
   if(error) throw error;
 }
 
 async function saveFoldersToCloud(){
-  if(!currentUser) return;
+  if(MOCK_MODE || !currentUser) return;
   const uid = currentUser.id;
   const {error:deleteError} = await supa.from('cadernos').delete().eq('user_id', uid);
   if(deleteError) throw deleteError;
@@ -1816,7 +1978,7 @@ async function saveFoldersToCloud(){
 }
 
 async function saveMateriasToCloud(){
-  if(!currentUser) return;
+  if(MOCK_MODE || !currentUser) return;
   const uid = currentUser.id;
   const {error:deleteError} = await supa.from('materias_custom').delete().eq('user_id', uid);
   if(deleteError) throw deleteError;
@@ -1828,6 +1990,17 @@ async function saveMateriasToCloud(){
 
 // ───── INIT ─────
 async function initApp(){
+  if(MOCK_MODE){
+    currentUser = null;
+    loadMockData();
+    document.getElementById('authScreen').style.display='none';
+    document.getElementById('splash').style.display='none';
+    document.getElementById('setupName').classList.remove('visible');
+    launchApp('Modo Teste');
+    setTimeout(()=>showToast('Modo teste ativo: nenhum dado será enviado ao Supabase.','warn'), 500);
+    return;
+  }
+
   // Escuta eventos de autenticação — detecta PASSWORD_RECOVERY quando o usuário
   // clica no link de redefinição de senha enviado por e-mail
   supa.auth.onAuthStateChange(async (event, session) => {
@@ -1889,7 +2062,7 @@ async function saveOwnerName(){
   if(!name){ input.focus(); input.style.borderColor='var(--red)'; return; }
   localStorage.setItem('cadOwnerName', name);
   // Salva também no Supabase Auth metadata
-  if(currentUser){
+  if(currentUser && !MOCK_MODE){
     await supa.auth.updateUser({ data: { name } });
   }
   document.getElementById('setupName').classList.remove('visible');
@@ -1954,6 +2127,82 @@ async function addCustomMateria(){
 
 // ───── FOLDERS ─────
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function safeCssColor(value){
+  const v=String(value||'').trim();
+  if(!v || v.length>45) return '';
+  if(/^#[0-9a-f]{3,8}$/i.test(v) || /^[a-z]+$/i.test(v) || /^rgba?\([\d\s.,%]+\)$/i.test(v)) return v;
+  return '';
+}
+function sanitizeRichHtml(html){
+  const template=document.createElement('template');
+  template.innerHTML=String(html||'');
+  const allowed=new Set(['b','strong','i','em','u','mark','br','div','p','span','font','ul','ol','li']);
+  const cleanNode=(node)=>{
+    if(node.nodeType===Node.TEXT_NODE) return document.createTextNode(node.textContent||'');
+    if(node.nodeType!==Node.ELEMENT_NODE) return document.createDocumentFragment();
+    const tag=node.tagName.toLowerCase();
+    const frag=document.createDocumentFragment();
+    if(!allowed.has(tag)){
+      node.childNodes.forEach(child=>frag.appendChild(cleanNode(child)));
+      return frag;
+    }
+    const el=document.createElement(tag==='font'?'span':tag);
+    if(tag==='span'||tag==='font'){
+      const bg=safeCssColor(node.style.backgroundColor);
+      const color=safeCssColor(node.style.color);
+      if(bg) el.style.backgroundColor=bg;
+      if(color) el.style.color=color;
+    }
+    node.childNodes.forEach(child=>el.appendChild(cleanNode(child)));
+    return el;
+  };
+  const out=document.createElement('div');
+  template.content.childNodes.forEach(node=>out.appendChild(cleanNode(node)));
+  return out.innerHTML;
+}
+function looksLikeHtml(value){return /<\/?[a-z][\s\S]*>/i.test(String(value||''));}
+function plainToRichHtml(value){return esc(value||'').replace(/\r\n|\r|\n/g,'<br>');}
+function renderRichText(value){
+  const raw=String(value||'');
+  if(!raw) return '';
+  return looksLikeHtml(raw) ? sanitizeRichHtml(raw) : plainToRichHtml(raw);
+}
+function richTextToPlain(value){
+  const el=document.createElement('div');
+  el.innerHTML=renderRichText(value);
+  return el.textContent||'';
+}
+function getFieldValue(id){
+  const el=document.getElementById(id);
+  if(!el) return '';
+  if(el.getAttribute('data-rich-editor')==='1'){
+    const html=sanitizeRichHtml(el.innerHTML||'').trim();
+    const probe=document.createElement('div');
+    probe.innerHTML=html.replace(/<br\s*\/?>/gi,'');
+    return probe.textContent.trim() ? html : '';
+  }
+  return el.value||'';
+}
+function setFieldValue(id,value){
+  const el=document.getElementById(id);
+  if(!el) return;
+  if(el.getAttribute('data-rich-editor')==='1') el.innerHTML=renderRichText(value);
+  else el.value=value||'';
+}
+function clearFieldValue(id){setFieldValue(id,'');}
+function runRichCommand(targetId,command){
+  const editor=document.getElementById(targetId);
+  if(!editor) return;
+  editor.focus();
+  if(command==='highlight'){
+    document.execCommand('backColor', false, '#fff1a8');
+  }else if(command==='orderedList'){
+    document.execCommand('insertOrderedList', false, null);
+  }else{
+    document.execCommand(command, false, null);
+  }
+  editor.innerHTML=sanitizeRichHtml(editor.innerHTML);
+}
 function renderFolders(){
   const list=document.getElementById('folderList');
   const sel=document.getElementById('fFolder');
@@ -1977,15 +2226,45 @@ function renderFolders(){
   });
   list.innerHTML=html;
 }
-function addFolder(){
-  const name=prompt('Nome do novo caderno:','');
-  if(name&&name.trim()){folders.push(name.trim());saveData();renderFolders();showToast('Caderno criado!','ok');}
+async function persistFolders(){
+  let saved=true;
+  try{
+    await saveFoldersToCloud();
+  }catch(err){
+    saved=false;
+    console.error(err);
+    showToast('Erro ao salvar cadernos na nuvem. Tente novamente.','warn');
+  }
+  await saveData();
+  return saved;
 }
-function renameFolder(i,newName){
+async function addFolder(){
+  const name=prompt('Nome do novo caderno:','');
+  if(name&&name.trim()){
+    const clean=name.trim();
+    if(folders.includes(clean)){showToast('Esse caderno já existe.','warn');return;}
+    folders.push(clean);
+    folders.sort((a,b)=>a.localeCompare(b,'pt'));
+    renderFolders();
+    if(await persistFolders()) showToast('Caderno criado e salvo!','ok');
+  }
+}
+async function renameFolder(i,newName){
   if(!newName.trim()||newName===folders[i])return;
-  const old=folders[i]; folders[i]=newName.trim();
-  errors.forEach(e=>{if(e.folder===old)e.folder=newName.trim();});
-  saveData(); renderFolders();
+  if(folders.some((f,idx)=>idx!==i && f===newName.trim())){showToast('Já existe um caderno com esse nome.','warn');renderFolders();return;}
+  const old=folders[i], clean=newName.trim();
+  folders[i]=clean;
+  if(currentFolder===old){
+    currentFolder=clean;
+    document.getElementById('currentFolderTitle').textContent=clean;
+  }
+  errors.forEach(e=>{if(e.folder===old)e.folder=clean;});
+  renderFolders(); renderCards();
+  await persistFolders();
+  const changedErrors = errors.filter(e=>e.folder===clean);
+  for(const entry of changedErrors){
+    try{await saveErrorToCloud(entry);}catch(err){console.error(err);}
+  }
 }
 async function deleteFolder(i){
   const name=folders[i], count=errors.filter(e=>e.folder===name).length;
@@ -1996,8 +2275,13 @@ async function deleteFolder(i){
   if(!ok) return;
   if(currentFolder===name){currentFolder='all';document.getElementById('currentFolderTitle').textContent='Todos os Erros';}
   errors.forEach(e=>{if(e.folder===name)e.folder='_sem_caderno_';});
-  folders.splice(i,1); saveData(); renderFolders(); renderCards();
-  showToast('Caderno excluído.','warn');
+  folders.splice(i,1); renderFolders(); renderCards();
+  const saved = await persistFolders();
+  const changedErrors = errors.filter(e=>e.folder==='_sem_caderno_');
+  for(const entry of changedErrors){
+    try{await saveErrorToCloud(entry);}catch(err){console.error(err);}
+  }
+  if(saved) showToast('Caderno excluído.','warn');
 }
 function setFolder(f){
   currentFolder=f;
@@ -2016,6 +2300,7 @@ function cardHTML(e){
   const revSt=getRevStatus(e);
   const nextRev=getNextRevLabel(e);
   const tags=(e.keywords||'').split(',').filter(k=>k.trim()).slice(0,3);
+  const ondePlain=richTextToPlain(e.onde||'');
   const difLbl=e.dificuldade==='facil'?'Fácil':e.dificuldade==='medio'?'Médio':'Difícil';
   const difDot=e.dificuldade==='facil'?'#27ae60':e.dificuldade==='medio'?'#e8c547':'#c0392b';
   const overdueClass = revSt.overdue ? ' overdue' : '';
@@ -2031,7 +2316,7 @@ function cardHTML(e){
         </div>
         <div class="card-banca">${esc(e.banca||'N/A')}</div>
       </div>
-      ${e.onde?`<div class="card-onde"><strong>Onde Errei</strong>${esc(e.onde.substring(0,100))}${e.onde.length>100?'...':''}</div>`:''}
+      ${ondePlain?`<div class="card-onde"><strong>Onde Errei</strong>${esc(ondePlain.substring(0,100))}${ondePlain.length>100?'...':''}</div>`:''}
       ${tags.length||e.lei?`<div class="card-tags">${tags.map(t=>`<span class="tag">${esc(t.trim())}</span>`).join('')}${e.lei?`<span class="tag lei">${esc(e.lei)}</span>`:''}</div>`:''}
       <div class="card-footer">
         <span class="diff-badge ${e.dificuldade}"><svg viewBox="0 0 8 8" style="width:8px;height:8px"><circle cx="4" cy="4" r="3.5" fill="${difDot}"/></svg>${difLbl}</span>
@@ -2177,18 +2462,19 @@ function openForm(prefillId){
     document.getElementById('fMateria').value =e.materia;
     document.getElementById('fBanca').value   =e.banca;
     document.getElementById('fAssunto').value =e.assunto;
-    document.getElementById('fOnde').value    =e.onde;
+    setFieldValue('fOnde', e.onde);
     document.getElementById('fDiff').value    =e.dificuldade;
     document.getElementById('fKeywords').value=e.keywords||'';
-    document.getElementById('fQuestao').value =e.questao||'';
-    document.getElementById('fObs').value     =e.obs||'';
+    setFieldValue('fQuestao', e.questao||'');
+    setFieldValue('fObs', e.obs||'');
     document.getElementById('fLei').value     =e.lei||'';
     document.getElementById('fArtigo').value  =e.artigo||'';
     document.getElementById('fData').value    =e.dataQuestao||'';
     document.querySelectorAll('.diff-opt').forEach(b=>b.classList.toggle('sel',b.classList.contains(e.dificuldade)));
     toggleLei(e.materia);
   } else {
-    ['fBanca','fAssunto','fOnde','fKeywords','fQuestao','fObs','fLei','fArtigo','fData'].forEach(id=>document.getElementById(id).value='');
+    ['fBanca','fAssunto','fKeywords','fLei','fArtigo','fData'].forEach(id=>document.getElementById(id).value='');
+    ['fOnde','fQuestao','fObs'].forEach(clearFieldValue);
     document.getElementById('fMateria').value='';
     document.getElementById('fDiff').value='dificil';
     document.querySelectorAll('.diff-opt').forEach(b=>b.classList.remove('sel'));
@@ -2236,11 +2522,11 @@ async function saveError(){
   const entry={
     id:          editingId||Date.now().toString(),
     materia, banca:document.getElementById('fBanca').value, assunto,
-    onde:        document.getElementById('fOnde').value,
+    onde:        getFieldValue('fOnde'),
     dificuldade: dif,
     keywords:    document.getElementById('fKeywords').value,
-    questao:     document.getElementById('fQuestao').value,
-    obs:         document.getElementById('fObs').value,
+    questao:     getFieldValue('fQuestao'),
+    obs:         getFieldValue('fObs'),
     lei:         document.getElementById('fLei').value,
     artigo:      document.getElementById('fArtigo').value,
     folder:      targetFolder,
@@ -2336,9 +2622,9 @@ function openDetail(id){
       ${e.lei?`<div class="detail-section"><div class="detail-label"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Lei</div><div class="detail-value">${esc(e.lei)}</div></div>`:''}
       ${e.artigo?`<div class="detail-section"><div class="detail-label"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="16" y2="18"/></svg>Artigo</div><div class="detail-value">${esc(e.artigo)}</div></div>`:''}
     </div>
-    ${e.onde?`<div class="detail-section"><div class="detail-label"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Onde Errei</div><div class="detail-value">${esc(e.onde)}</div></div>`:''}
-    ${e.questao?`<div class="detail-section"><div class="detail-label"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Questão / Enunciado</div><div class="detail-value" style="font-size:.82rem;font-style:italic;color:var(--text2)">${esc(e.questao)}</div></div>`:''}
-    ${e.obs?`<div class="detail-section"><div class="detail-label"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>Observações / Gabarito</div><div class="detail-value">${esc(e.obs)}</div></div>`:''}
+    ${e.onde?`<div class="detail-section"><div class="detail-label"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Onde Errei</div><div class="detail-value rich-content">${renderRichText(e.onde)}</div></div>`:''}
+    ${e.questao?`<div class="detail-section"><div class="detail-label"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Questão / Enunciado</div><div class="detail-value rich-content" style="font-size:.82rem;color:var(--text2)">${renderRichText(e.questao)}</div></div>`:''}
+    ${e.obs?`<div class="detail-section"><div class="detail-label"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>Observações / Gabarito</div><div class="detail-value rich-content">${renderRichText(e.obs)}</div></div>`:''}
     ${keywords.length?`<div class="detail-section"><div class="detail-label"><svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Palavras-chave</div><div class="keywords">${keywords.map(k=>`<span class="keyword">${esc(k.trim())}</span>`).join('')}</div></div>`:''}
     <div class="detail-section">
       <div class="detail-label"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Revisão</div>
@@ -2659,7 +2945,7 @@ async function confirmImport(){
   flashResults   = pendingImport.flashResults   || [];
 
   // Salvar tudo na nuvem se logado
-  if(currentUser){
+  if(currentUser && !MOCK_MODE){
     showLoading('Restaurando dados na nuvem...');
     const uid = currentUser.id;
     // Erros
@@ -2751,9 +3037,16 @@ function renderMobileFolders(){
   list.innerHTML = html;
 }
 function mobileFolderSelect(f){ setFolder(f); closeMobileDrawer(); }
-function addFolderMobile(){
+async function addFolderMobile(){
   const name = prompt('Nome do novo caderno:','');
-  if(name&&name.trim()){folders.push(name.trim());saveData();renderFolders();renderMobileFolders();showToast('Caderno criado!','ok');}
+  if(name&&name.trim()){
+    const clean=name.trim();
+    if(folders.includes(clean)){showToast('Esse caderno já existe.','warn');return;}
+    folders.push(clean);
+    folders.sort((a,b)=>a.localeCompare(b,'pt'));
+    renderFolders();renderMobileFolders();
+    if(await persistFolders()) showToast('Caderno criado e salvo!','ok');
+  }
 }
 
 // ───── PASTAS POR MATÉRIA ─────
@@ -2957,8 +3250,8 @@ function showFlashCard(){
     return;
   }
   const e=flashQueue[flashIndex];
-  document.getElementById('flashQuestion').textContent=e.questao;
-  document.getElementById('flashAnswer').textContent=e.obs;
+  document.getElementById('flashQuestion').innerHTML=renderRichText(e.questao);
+  document.getElementById('flashAnswer').innerHTML=renderRichText(e.obs);
   document.getElementById('flashCard').classList.remove('flipped');
   document.getElementById('flashActions').style.display='none';
   document.getElementById('flashProgress').textContent=`${flashIndex+1} / ${flashQueue.length}`;
@@ -3002,7 +3295,8 @@ async function saveFlashResult(){
   const result={date:new Date().toLocaleDateString('pt-BR'),ts:Date.now(),correct:flashCorrect,wrong:flashWrong,total:flashQueue.length};
   flashResults.push(result);
   if(flashResults.length>30)flashResults=flashResults.slice(-30);
-  if(currentUser){
+  saveData();
+  if(currentUser && !MOCK_MODE){
     await supa.from('flash_results').insert({
       user_id: currentUser.id,
       date: result.date,
@@ -3081,9 +3375,10 @@ async function saveNote(){
   };
   notes.push(note);
   closeNoteForm();
+  saveData();
   renderNotes();
   showToast('Nota salva!','ok');
-  if(currentUser){
+  if(currentUser && !MOCK_MODE){
     try{
       await supa.from('notes').insert({
         id: note.id, user_id: currentUser.id,
@@ -3097,7 +3392,8 @@ async function deleteNote(id){
   const ok = await showConfirm('Excluir nota','Deseja excluir esta nota permanentemente?','Excluir');
   if(!ok) return;
   notes=notes.filter(n=>n.id!==id);
-  if(currentUser){
+  saveData();
+  if(currentUser && !MOCK_MODE){
     await supa.from('notes').delete().eq('id', id).eq('user_id', currentUser.id);
   }
   renderNotes();
@@ -3146,7 +3442,8 @@ async function timerStop(){
   };
   timerSessions.unshift(session);
   if(timerSessions.length>50)timerSessions=timerSessions.slice(0,50);
-  if(currentUser){
+  saveData();
+  if(currentUser && !MOCK_MODE){
     await supa.from('timer_sessions').insert({
       id: session.id,
       user_id: currentUser.id,
@@ -3198,7 +3495,8 @@ async function deleteTimerSession(id){
   const ok = await showConfirm('Excluir sessão','Deseja excluir esta sessão do cronômetro?','Excluir');
   if(!ok) return;
   timerSessions=timerSessions.filter(s=>s.id!==id);
-  if(currentUser){
+  saveData();
+  if(currentUser && !MOCK_MODE){
     await supa.from('timer_sessions').delete().eq('id', id).eq('user_id', currentUser.id);
   }
   renderTimerHistory();
@@ -3341,7 +3639,7 @@ function renderMotivationalBar(){
   document.querySelectorAll('.copyrightBarYear').forEach(el => el.textContent = yr);
 })();
 
-document.addEventListener('click', (event)=>{
+document.addEventListener('click', async (event)=>{
   if(event.target.closest('.folder-name-input, .mobile-folder-input')) return;
   const trigger = event.target.closest('[data-action]');
   if(!trigger) return;
@@ -3365,7 +3663,7 @@ document.addEventListener('click', (event)=>{
   } else if(action === 'auth-signout'){
     authSignOut();
   } else if(action === 'add-folder'){
-    addFolder();
+    await addFolder();
   } else if(action === 'install-pwa'){
     installPWA();
   } else if(action === 'export-data'){
@@ -3427,7 +3725,7 @@ document.addEventListener('click', (event)=>{
   } else if(action === 'close-mobile-drawer'){
     closeMobileDrawer();
   } else if(action === 'add-folder-mobile'){
-    addFolderMobile();
+    await addFolderMobile();
   } else if(action === 'mobile-export-data'){
     exportData();
     closeMobileDrawer();
@@ -3440,6 +3738,8 @@ document.addEventListener('click', (event)=>{
     addCustomMateria();
   } else if(action === 'select-diff'){
     selDiff(trigger.getAttribute('data-diff') || 'dificil', trigger);
+  } else if(action === 'rich-command'){
+    runRichCommand(trigger.getAttribute('data-target') || '', trigger.getAttribute('data-command') || '');
   } else if(action === 'save-error'){
     saveError();
   } else if(action === 'close-detail'){
@@ -3469,29 +3769,41 @@ document.addEventListener('click', (event)=>{
   } else if(action === 'delete-folder'){
     event.stopPropagation();
     const idx = Number(trigger.getAttribute('data-index'));
-    if(Number.isInteger(idx)) deleteFolder(idx);
+    if(Number.isInteger(idx)) await deleteFolder(idx);
   } else if(action === 'mobile-folder-select'){
     mobileFolderSelect(trigger.getAttribute('data-folder') || 'all');
   } else if(action === 'mobile-folder-delete'){
     event.stopPropagation();
     const idx = Number(trigger.getAttribute('data-index'));
     if(Number.isInteger(idx)){
-      deleteFolder(idx);
+      await deleteFolder(idx);
       renderMobileFolders();
     }
   }
 });
 
-document.addEventListener('focusout', (event)=>{
+document.addEventListener('mousedown', (event)=>{
+  if(event.target.closest('.rich-toolbar-btn')) event.preventDefault();
+});
+
+document.addEventListener('paste', (event)=>{
+  const editor = event.target.closest?.('[data-rich-editor="1"]');
+  if(!editor) return;
+  event.preventDefault();
+  const text = event.clipboardData?.getData('text/plain') || '';
+  document.execCommand('insertText', false, text);
+});
+
+document.addEventListener('focusout', async (event)=>{
   const input = event.target;
   if(!(input instanceof HTMLInputElement)) return;
   const action = input.getAttribute('data-action');
   const idx = Number(input.getAttribute('data-index'));
   if(!Number.isInteger(idx)) return;
   if(action === 'rename-folder'){
-    renameFolder(idx, input.value);
+    await renameFolder(idx, input.value);
   } else if(action === 'rename-mobile-folder'){
-    renameFolder(idx, input.value);
+    await renameFolder(idx, input.value);
     renderMobileFolders();
   }
 });
