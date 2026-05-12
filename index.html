@@ -313,7 +313,6 @@
   .rich-editor{min-height:82px;resize:vertical;overflow:auto;border-radius:0 0 8px 8px;white-space:pre-wrap}
   .rich-editor:empty:before{content:attr(data-placeholder);color:var(--text3);pointer-events:none}
   .rich-editor mark{background:var(--highlight-bg);color:var(--highlight-text);padding:0 0.12rem;border-radius:3px}
-  .rich-editor span[style*="background-color"],.rich-content span[style*="background-color"],.flash-content span[style*="background-color"]{color:var(--highlight-text)!important}
   select.form-control{cursor:pointer}
   .form-control::placeholder{color:var(--text3)}
   .form-hint{font-size:0.66rem;color:var(--text3)}
@@ -2183,12 +2182,6 @@ async function addCustomMateria(){
 
 // ───── FOLDERS ─────
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function safeCssColor(value){
-  const v=String(value||'').trim();
-  if(!v || v.length>45) return '';
-  if(/^#[0-9a-f]{3,8}$/i.test(v) || /^[a-z]+$/i.test(v) || /^rgba?\([\d\s.,%]+\)$/i.test(v)) return v;
-  return '';
-}
 function sanitizeRichHtml(html){
   const template=document.createElement('template');
   template.innerHTML=String(html||'');
@@ -2202,13 +2195,8 @@ function sanitizeRichHtml(html){
       node.childNodes.forEach(child=>frag.appendChild(cleanNode(child)));
       return frag;
     }
-    const el=document.createElement(tag==='font'?'span':tag);
-    if(tag==='span'||tag==='font'){
-      const bg=safeCssColor(node.style.backgroundColor);
-      const color=safeCssColor(node.style.color);
-      if(bg) el.style.backgroundColor=bg;
-      if(color) el.style.color=color;
-    }
+    const hasLegacyHighlight = (tag==='span'||tag==='font') && !!node.style.backgroundColor;
+    const el=document.createElement(hasLegacyHighlight ? 'mark' : (tag==='font'?'span':tag));
     node.childNodes.forEach(child=>el.appendChild(cleanNode(child)));
     return el;
   };
@@ -2288,13 +2276,40 @@ function setFieldValue(id,value){
   else el.value=value||'';
 }
 function clearFieldValue(id){setFieldValue(id,'');}
+function selectionBelongsToEditor(selection, editor){
+  if(!selection || selection.rangeCount===0) return false;
+  const range = selection.getRangeAt(0);
+  return editor.contains(range.commonAncestorContainer);
+}
+function unwrapNestedMarks(mark){
+  mark.querySelectorAll('mark').forEach(inner=>{
+    while(inner.firstChild) inner.parentNode.insertBefore(inner.firstChild, inner);
+    inner.remove();
+  });
+}
+function applyHighlightToSelection(editor){
+  const selection = window.getSelection();
+  if(!selectionBelongsToEditor(selection, editor)) return false;
+  const range = selection.getRangeAt(0);
+  if(range.collapsed) return false;
+
+  const mark = document.createElement('mark');
+  mark.appendChild(range.extractContents());
+  unwrapNestedMarks(mark);
+  range.insertNode(mark);
+  selection.removeAllRanges();
+  const after = document.createRange();
+  after.setStartAfter(mark);
+  after.collapse(true);
+  selection.addRange(after);
+  return true;
+}
 function runRichCommand(targetId,command){
   const editor=document.getElementById(targetId);
   if(!editor) return;
   editor.focus();
   if(command==='highlight'){
-    document.execCommand('backColor', false, '#ffe08a');
-    document.execCommand('foreColor', false, '#2c2923');
+    if(!applyHighlightToSelection(editor)) showToast('Selecione um trecho do texto para destacar.','warn');
   }else if(command==='orderedList'){
     document.execCommand('insertOrderedList', false, null);
   }else{
