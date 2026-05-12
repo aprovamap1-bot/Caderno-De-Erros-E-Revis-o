@@ -3,7 +3,7 @@
 //  Cache estático para funcionamento offline básico
 // ═══════════════════════════════════════════════════════════
 
-const CACHE_NAME = 'caderno-v8';
+const CACHE_NAME = 'caderno-v9';
 const STATIC_ASSETS = [
   'manifest.json',
   'icon.svg',
