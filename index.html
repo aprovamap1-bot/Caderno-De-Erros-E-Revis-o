@@ -63,20 +63,21 @@
   .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(232,197,71,0.35)}
   .btn-primary svg{width:16px;height:16px;fill:none;stroke:#000;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
-  /* Assinatura SPLASH — visível, elegante, discreta */
+  /* Assinatura SPLASH — legível no tema claro sem competir com o CTA */
   .splash-credit{
     margin-top:2.8rem;
     display:flex;align-items:center;justify-content:center;gap:0.55rem;
-    opacity:0.42;
+    opacity:1;
   }
   .splash-credit-inner{
     display:flex;align-items:center;gap:0.5rem;
     padding:0.4rem 1rem;border-radius:50px;
-    border:1px solid rgba(138,129,115,0.18);
-    background:rgba(255,255,255,0.55);
+    border:1px solid rgba(185,133,16,0.28);
+    background:rgba(255,253,248,0.88);
+    box-shadow:0 6px 18px rgba(77,62,38,0.08);
   }
-  .splash-credit svg{width:13px;height:13px;fill:currentColor;color:var(--text3)}
-  .splash-credit span{font-size:0.72rem;color:var(--text3);letter-spacing:0.8px;font-weight:500}
+  .splash-credit svg{width:13px;height:13px;fill:currentColor;color:var(--accent)}
+  .splash-credit span{font-size:0.72rem;color:var(--text2);letter-spacing:0.8px;font-weight:700}
   .splash-credit .sep{color:var(--border);font-size:0.7rem}
 
   /* ══════════════════════════════════
@@ -105,13 +106,13 @@
   .nav-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
   .nav-btn:hover,.nav-btn.active{background:var(--surface2);color:var(--text)}
   .nav-btn.active{color:var(--accent)}
-  /* Crédito header — suave */
+  /* Crédito header — visível no tema claro */
   .header-credit{
     display:flex;align-items:center;gap:0.38rem;
-    opacity:0.22;pointer-events:none;user-select:none;
+    opacity:0.7;pointer-events:none;user-select:none;
   }
-  .header-credit svg{width:11px;height:11px;fill:currentColor;color:var(--text3)}
-  .header-credit span{font-size:0.58rem;color:var(--text3);letter-spacing:0.5px}
+  .header-credit svg{width:11px;height:11px;fill:currentColor;color:var(--accent)}
+  .header-credit span{font-size:0.58rem;color:var(--text2);letter-spacing:0.5px;font-weight:700}
 
   /* LAYOUT */
   .main-layout{display:grid;grid-template-columns:272px 1fr;min-height:calc(100vh - 62px)}
