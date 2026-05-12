@@ -866,6 +866,7 @@
             <div class="storage-bar-fill" id="storageBarFill"></div>
           </div>
           <div class="storage-detail" id="storageDetail">Calculando...</div>
+          <div class="storage-alert" id="storageAlertMsg"></div>
         </div>
 
         <div class="backup-info">Ao receber uma versão nova, exporte aqui, abra o novo arquivo e importe. Seus dados voltam completos.</div>
@@ -1742,16 +1743,6 @@ function showAuthScreen(){
   document.getElementById('splash').style.display='none';
   document.getElementById('authScreen').style.display='flex';
 }
-function showAuthLogin(){
-  document.getElementById('authLogin').style.display='block';
-  document.getElementById('authRegister').style.display='none';
-  document.getElementById('authMsg').textContent='';
-}
-function showAuthRegister(){
-  document.getElementById('authLogin').style.display='none';
-  document.getElementById('authRegister').style.display='block';
-  document.getElementById('authMsg').textContent='';
-}
 function setAuthMsg(msg, color='var(--text2)'){
   const el = document.getElementById('authMsg');
   el.textContent = msg;
@@ -1802,22 +1793,6 @@ async function authSignIn(){
   await handlePostLogin(data.user, email);
 }
 
-async function authSignUp(){
-  const name = document.getElementById('regName').value.trim();
-  const email = document.getElementById('regEmail').value.trim();
-  const password = document.getElementById('regPassword').value;
-  if(!name||!email||!password){ setAuthMsg('Preencha todos os campos!','var(--red)'); return; }
-  if(password.length < 6){ setAuthMsg('Senha precisa ter no mínimo 6 caracteres.','var(--red)'); return; }
-  setAuthMsg('Criando sua conta...','var(--accent)');
-  const {data, error} = await supa.auth.signUp({
-    email, password,
-    options:{ data:{ name } }
-  });
-  if(error){ setAuthMsg('Erro: '+error.message,'var(--red)'); return; }
-  setAuthMsg('✅ Conta criada! Verifique seu e-mail para confirmar.','var(--green)');
-  setTimeout(()=>showAuthLogin(), 3000);
-}
-
 async function authForgotPassword(){
   const email = document.getElementById('authEmail').value.trim();
   if(!email){ setAuthMsg('Digite seu e-mail primeiro!','var(--red)'); return; }
@@ -1850,7 +1825,8 @@ async function submitForcedPasswordChange(){
   closeForcePasswordModal();
   showToast('Senha atualizada com sucesso!','ok');
   // Se o usuário chegou via link de recuperação, carrega o app após a troca
-  if(currentUser && !document.getElementById('appContent')?.classList.contains('active')){
+  const appVisible = document.getElementById('app')?.style.display === 'block';
+  if(currentUser && !appVisible){
     await handlePostLogin(currentUser, currentUser.email || '');
   }
 }
@@ -1916,7 +1892,7 @@ async function loadUserData(){
   // Notas
   notes = (notesData||[]).map(r=>({
     id: r.id, title: r.title||'', body: r.body||'',
-    tag: r.tag||'importante', createdAt: r.created_at
+    tag: r.tag||'importante', createdAt: normalizeNoteCreatedAt(r.created_at)
   }));
 
   // Sessões do cronômetro
@@ -1929,6 +1905,35 @@ async function loadUserData(){
   flashResults = (flashData||[]).map(r=>({
     date: r.date, ts: r.ts, correct: r.correct, wrong: r.wrong, total: r.total
   }));
+}
+
+function normalizeNoteCreatedAt(value){
+  const numeric = Number(value);
+  if(Number.isFinite(numeric) && numeric > 0) return numeric;
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) ? parsed : Date.now();
+}
+
+function noteCloudRow(note, uid, createdAtMode='iso'){
+  const createdAt = normalizeNoteCreatedAt(note.createdAt);
+  return {
+    id: note.id,
+    user_id: uid,
+    title: note.title||'',
+    body: note.body||'',
+    tag: note.tag||'importante',
+    created_at: createdAtMode === 'number' ? createdAt : new Date(createdAt).toISOString()
+  };
+}
+
+async function insertNotesToCloud(notesList, uid){
+  if(!notesList.length) return;
+  const {error} = await supa.from('notes').insert(notesList.map(note=>noteCloudRow(note, uid, 'iso')));
+  if(!error) return;
+
+  // Compatibilidade: alguns projetos antigos criaram notes.created_at como BIGINT.
+  const {error:retryError} = await supa.from('notes').insert(notesList.map(note=>noteCloudRow(note, uid, 'number')));
+  if(retryError) throw retryError;
 }
 
 async function saveData(){
@@ -2936,13 +2941,8 @@ function updateStorageMeter(){
     }
 
     // Alert below 80% threshold
-    let alertEl = document.getElementById('storageAlertMsg');
-    if(!alertEl){
-      alertEl = document.createElement('div');
-      alertEl.id = 'storageAlertMsg';
-      alertEl.className = 'storage-alert';
-      document.querySelector('.storage-meter-wrap').appendChild(alertEl);
-    }
+    const alertEl = document.getElementById('storageAlertMsg');
+    if(!alertEl) return;
     alertEl.className = 'storage-alert';
     if(pct >= 90){
       alertEl.className = 'storage-alert danger';
@@ -3014,6 +3014,44 @@ function sanitizeImportedError(item){
   };
 }
 
+function sanitizeImportedNote(item){
+  if(!item || typeof item !== 'object') return null;
+  const rawId = typeof item.id === 'string' || typeof item.id === 'number' ? String(item.id) : '';
+  if(!rawId) return null;
+  return {
+    id: sanitizeImportText(rawId, 64),
+    title: sanitizeImportText(item.title, 180),
+    body: sanitizeImportText(item.body, 5000),
+    tag: ['importante','revisar','priorizar','nao-esquecer'].includes(item.tag) ? item.tag : 'importante',
+    createdAt: normalizeNoteCreatedAt(item.createdAt)
+  };
+}
+
+function sanitizeImportedTimerSession(item){
+  if(!item || typeof item !== 'object') return null;
+  const rawId = typeof item.id === 'string' || typeof item.id === 'number' ? String(item.id) : '';
+  if(!rawId) return null;
+  return {
+    id: sanitizeImportText(rawId, 64),
+    seconds: Math.max(0, Math.floor(Number(item.seconds)||0)),
+    duration: sanitizeImportText(item.duration, 20),
+    date: sanitizeImportText(item.date, 40),
+    time: sanitizeImportText(item.time, 20),
+    ts: Number.isFinite(Number(item.ts)) ? Number(item.ts) : Date.now()
+  };
+}
+
+function sanitizeImportedFlashResult(item){
+  if(!item || typeof item !== 'object') return null;
+  return {
+    date: sanitizeImportText(item.date, 40),
+    ts: Number.isFinite(Number(item.ts)) ? Number(item.ts) : Date.now(),
+    correct: Math.max(0, Math.floor(Number(item.correct)||0)),
+    wrong: Math.max(0, Math.floor(Number(item.wrong)||0)),
+    total: Math.max(0, Math.floor(Number(item.total)||0))
+  };
+}
+
 function sanitizeImportedPayload(data){
   if(!data || typeof data !== 'object' || !Array.isArray(data.errors)) return null;
   if(data.errors.length > 10000) return null; // avoid oversized payloads
@@ -3028,7 +3066,10 @@ function sanitizeImportedPayload(data){
     exportedAtBR: sanitizeImportText(data.exportedAtBR || '', 40),
     errors: [...unique.values()],
     folders: sanitizeList(data.folders),
-    customMaterias: sanitizeList(data.customMaterias)
+    customMaterias: sanitizeList(data.customMaterias),
+    notes: Array.isArray(data.notes) ? data.notes.map(sanitizeImportedNote).filter(Boolean).slice(0,1000) : [],
+    timerSessions: Array.isArray(data.timerSessions) ? data.timerSessions.map(sanitizeImportedTimerSession).filter(Boolean).slice(0,1000) : [],
+    flashResults: Array.isArray(data.flashResults) ? data.flashResults.map(sanitizeImportedFlashResult).filter(Boolean).slice(-30) : []
   };
 }
 
@@ -3059,6 +3100,18 @@ function importData(event){
         <div class="import-preview-row">
           <span>Matérias personalizadas</span>
           <span>${(data.customMaterias||[]).length}</span>
+        </div>
+        <div class="import-preview-row">
+          <span>Notas rápidas</span>
+          <span>${(data.notes||[]).length}</span>
+        </div>
+        <div class="import-preview-row">
+          <span>Sessões de estudo</span>
+          <span>${(data.timerSessions||[]).length}</span>
+        </div>
+        <div class="import-preview-row">
+          <span>Resultados de flashcards</span>
+          <span>${(data.flashResults||[]).length}</span>
         </div>
         <div class="import-preview-row">
           <span>Data do backup</span>
@@ -3113,7 +3166,7 @@ async function confirmImport(){
     if(customMaterias.length) await supa.from('materias_custom').insert(customMaterias.map(m=>({user_id:uid,nome:m})));
     // Notas
     await supa.from('notes').delete().eq('user_id', uid);
-    if(notes.length) await supa.from('notes').insert(notes.map(n=>({id:n.id,user_id:uid,title:n.title||'',body:n.body||'',tag:n.tag||'importante',created_at:n.createdAt})));
+    await insertNotesToCloud(notes, uid);
     // Sessões cronômetro
     await supa.from('timer_sessions').delete().eq('user_id', uid);
     if(timerSessions.length) await supa.from('timer_sessions').insert(timerSessions.map(s=>({id:s.id,user_id:uid,seconds:s.seconds,duration:s.duration,date:s.date,time:s.time,ts:s.ts})));
@@ -3530,11 +3583,7 @@ async function saveNote(){
   showToast('Nota salva!','ok');
   if(currentUser && !MOCK_MODE){
     try{
-      await supa.from('notes').insert({
-        id: note.id, user_id: currentUser.id,
-        title: note.title, body: note.body,
-        tag: note.tag, created_at: note.createdAt
-      });
+      await insertNotesToCloud([note], currentUser.id);
     }catch(err){ console.error('Erro ao salvar nota:', err); }
   }
 }
@@ -3798,14 +3847,8 @@ document.addEventListener('click', async (event)=>{
     initApp();
   } else if(action === 'auth-signin'){
     authSignIn();
-  } else if(action === 'show-auth-register'){
-    showAuthRegister();
   } else if(action === 'auth-forgot'){
     authForgotPassword();
-  } else if(action === 'auth-signup'){
-    authSignUp();
-  } else if(action === 'show-auth-login'){
-    showAuthLogin();
   } else if(action === 'save-owner-name'){
     saveOwnerName();
   } else if(action === 'show-view'){
